@@ -1,13 +1,62 @@
-<p>dashboard works!</p>
-<h2>Dashboard</h2>
+<!-- header principal -->
+<div class="header-seccion">
 
-<!-- <nav>
-  <a routerLink="/inventory">Inventory</a> |
-  <a routerLink="/sales">Sales</a> |
-  <a routerLink="/purchases">Purchases</a> |
-  <a routerLink="/reports">Reports</a>
-</nav> -->
+  <!-- logo pequeño -->
+  <div class="logo-pequeno">
+    <img src="iconos/flor.png" alt="logo">
+  </div>
 
-<br>
+  <!-- textos -->
+  <div class="texto-header">
+    <h1 class="titulo">Bienvenida al sistema</h1>
+    <p class="subtitulo">Seleccione un modulo para continuar</p>
+  </div>
+  
+  <!-- usuario -->
+  <div class="user-section">
+    <span class="admin">Admin</span>
+    <button class="logout" (click)="salir()">Salir</button>
+  </div>
 
-<p>Welcome to the system</p>
+</div>
+
+<!-- tarjetas -->
+<div class="contenedor">
+
+  <!-- inventario -->
+  <div class="card" routerLink="/inventory">
+    <div class="icono inventario">
+      <img src="iconos/cajita.png" alt="inventario">
+    </div>
+    <h3>Inventario</h3>
+    <p>Aqui puede ver y manejar los productos</p>
+  </div>
+
+  <!-- compras -->
+  <div class="card" routerLink="/purchases">
+    <div class="icono compras">
+      <img src="iconos/carrito.png" alt="compras">
+    </div>
+    <h3>Compras</h3>
+    <p>Aqui registra las compras de la drogueria</p>
+  </div>
+
+  <!-- ventas -->
+  <div class="card" routerLink="/sales">
+    <div class="icono ventas">
+      <img src="iconos/venta.png" alt="ventas">
+    </div>
+    <h3>Ventas</h3>
+    <p>Control de las ventas realizadas</p>
+  </div>
+
+  <!-- informes -->
+  <div class="card" routerLink="/reports">
+    <div class="icono informes">
+      <img src="iconos/informe.png" alt="informes">
+    </div>
+    <h3>Informes</h3>
+    <p>Reportes del negocio</p>
+  </div>
+
+</div>

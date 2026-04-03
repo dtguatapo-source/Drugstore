@@ -1,31 +1,65 @@
-<p>login works!</p><h2>Login</h2>
+<div class="container">
 
-<form (ngSubmit)="login()">
+  <!-- lado izquierdo logo -->
+  <div class="left">
+    <div class="card">
 
-  <label>User:</label>
-  <input 
-    type="text" 
-    [(ngModel)]="username" 
-    name="username"
-    required
-  />
+      <div class="logo">
+        <img src="iconos/flor.png" alt="flor">
+      </div>
 
-  <br><br>
+      <!-- nombre -->
+      <h1>Drogueria Pili</h1>
+      <p>SISTEMA DE GESTION</p>
 
-  <label>Password:</label>
-  <input 
-    type="password" 
-    [(ngModel)]="password" 
-    name="password"
-    required
-  />
+    </div>
+  </div>
 
-  <br><br>
+  <!-- lado derecho login -->
+  <div class="right">
+    <div class="login-box">
 
-  <button type="submit">Login</button>
+      <h2>Ingresar al sistema</h2>
 
-</form>
+      <!-- form login -->
+      <form (ngSubmit)="login()">
 
-@if (error) {
-  <p style="color:red;">Invalid credentials</p>
-}
+        <!-- usuario -->
+        <div class="input-group">
+          <label>Usuario</label>
+          <input 
+            type="text" 
+            [(ngModel)]="username" 
+            name="username" 
+            placeholder="Ingrese su usuario"
+            required
+          />
+        </div>
+
+        <!-- contraseña -->
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input 
+            type="password" 
+            [(ngModel)]="password" 
+            name="password" 
+            placeholder="Ingrese su contraseña"
+            required
+          />
+        </div>
+
+        <!-- boton -->
+        <button type="submit">Ingresar</button>
+
+        <!-- error -->
+        @if (error) {
+          <p style="color:red; margin-top:10px; text-align:center;">
+            Credenciales invalidas
+          </p>
+        }
+
+      </form>
+    </div>
+  </div>
+
+</div>

@@ -1,27 +1,31 @@
 @if (mostrarLayout) {
+  <!-- header con el menu principal -->
   <header>
-    <img class="logo" src="assets/logo.png" alt="Logo TrikiTrueke" routerLink="/home" routerLinkActive="activo">
-
     <nav>
       <div class="LinksNav">
-       <a class="btn-fondo" routerLink="/inventory" routerLinkActive="activo">Inventario</a>
-<a class="btn-fondo" routerLink="/sales" routerLinkActive="activo">Sales</a>
-<a class="btn-fondo" routerLink="/purchases" routerLinkActive="activo">Purchases</a>
-<a class="btn-fondo" routerLink="/reports" routerLinkActive="activo">Reports</a>
+        <!-- links para navegar en la app -->
+        <a class="btn-fondo" routerLink="/inventory" routerLinkActive="activo">Inventario</a>
+        <a class="btn-fondo" routerLink="/sales" routerLinkActive="activo">Ventas</a>
+        <a class="btn-fondo" routerLink="/purchases" routerLinkActive="activo">Compras</a>
+        <a class="btn-fondo" routerLink="/reports" routerLinkActive="activo">Informes</a>
       </div>
     </nav>
   </header>
 }
 
 <main>
+  <!-- aqui se cargan las paginas -->
   <router-outlet></router-outlet>
 </main>
 
 @if (mostrarLayout) {
+  <!-- footer de la pagina -->
   <footer class="footer">
-    <p>© 2025 Drugstore — Todos los derechos reservados</p>
+    <p>© 2026 Droguería Pili Todos los derechos reservados</p>
+
+    <!-- redes sociales -->
     <div class="social">
-      <a href="https://www.instagram.com/SaraBlonde">
+      <a href="https://www.instagram.com/tu-usuario">
         <img src="assets/Instagram.png" alt="Instagram">
       </a>
     </div>
