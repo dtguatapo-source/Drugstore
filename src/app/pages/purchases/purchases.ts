@@ -46,7 +46,6 @@ export class Purchases {
     });
   }
 
-  // busca los datos cuando se elige en el select
   buscarMed() {
     this.medEncontrado = this.listaMedicamentos.find(m => m.id === this.newPurchase.medicineId);
 
@@ -56,7 +55,6 @@ export class Purchases {
     }
   }
 
-  // registro del boton + 
   meterALista() {
 
     const p = this.newPurchase;
@@ -110,7 +108,6 @@ export class Purchases {
   }
 
 
-  // procesa la compra y actualiza el inventario
   guardarCompra() {
 
     if (this.tablaTemporal.length === 0) {

@@ -1,4 +1,3 @@
-/* Contenedor Principal */
 .inventory-container {
     background-color: #f4f7fe !important;
     padding: 30px;
@@ -6,7 +5,6 @@
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* Encabezado y Buscador */
 .header-seccion {
     display: flex;
     justify-content: space-between;
@@ -30,7 +28,6 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
-/* Tarjetas Blancas (Formulario y Tabla) */
 .tarjeta-blanca {
     background: #ffffff !important;
     border-radius: 15px !important;
@@ -51,10 +48,9 @@
     margin-bottom: 20px;
 }
 
-/* Grid del Formulario */
 .grid-formulario {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+    grid-template-columns: repeat(4, 1fr); 
     gap: 20px;
 }
 
@@ -65,7 +61,7 @@
 }
 
 .campo.grande {
-    grid-column: span 2; /* Ocupa el doble de espacio */
+    grid-column: span 2; 
 }
 
 .campo label {
@@ -89,7 +85,6 @@
     background-color: #fff;
 }
 
-/* Tabla Estilo Mockup */
 .tabla-scroll {
     overflow-x: auto;
     border-radius: 10px;
@@ -119,7 +114,6 @@ td {
     font-size: 14px;
 }
 
-/* Etiquetas de Estado */
 .etiqueta-estado {
     padding: 5px 12px;
     border-radius: 20px;
@@ -142,7 +136,6 @@ td {
     color: #e53e3e;
 }
 
-/* Botones de Acción Inferiores */
 .botones-abajo {
     display: flex;
     gap: 12px;

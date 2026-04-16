@@ -6,7 +6,6 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* lado izquierdo */
 .left {
     flex: 1;
     background-color: #f0f9f9;
@@ -15,7 +14,6 @@
     align-items: center;
 }
 
-/* tarjeta del logo */
 .card {
     background: white;
     padding: 60px 40px;
@@ -25,7 +23,6 @@
     width: 300px;
 }
 
-/* circulo del logo */
 .logo {
     width: 120px;
     height: 120px;
@@ -58,7 +55,6 @@
     margin-top: 10px;
 }
 
-/* lado derecho */
 .right {
     flex: 1.2;
     background: linear-gradient(135deg, #6a79d1, #4a54a4);
@@ -68,7 +64,6 @@
     color: white;
 }
 
-/* caja login */
 .login-box {
     width: 100%;
     max-width: 450px;
@@ -81,7 +76,6 @@
     text-align: center;
 }
 
-/* inputs */
 .input-group {
     margin-bottom: 25px;
 }
@@ -103,7 +97,6 @@
     outline: none;
 }
 
-/* boton */
 button {
     width: 100%;
     padding: 18px;
@@ -116,7 +109,6 @@ button {
     margin-top: 20px;
 }
 
-/* BURBUJA DE MENSAJE */
 .alerta {
     margin-top: 15px;
     padding: 14px;
@@ -130,7 +122,6 @@ button {
     animation: aparecer 0.3s ease;
 }
 
-/* animacion */
 @keyframes aparecer {
     from {
         opacity: 0;

@@ -1,24 +1,16 @@
- INFORME DE MOVIMIENTOS - ESTILOS FINALES
 
-   ========================================================================== */
-
-
-
-   * {
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
-/* Contenedor General */
 
 .reports-main-container {
-    background-color: #f4f7fe !important; /* FONDO UNIFICADO */
+    background-color: #f4f7fe !important; 
     padding: 30px;
     min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* TIPOGRAFÍA UNIFICADA */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 }
-
-
 
 .reports-header {
     display: flex;
@@ -27,11 +19,9 @@
     margin-bottom: 30px;
 }
 
-
-
 .reports-header h2 {
     color: #1e293b;
-    font-size: 24px; /* TAMAÑO UNIFICADO */
+    font-size: 24px; 
     font-weight: 700;
     letter-spacing: -0.5px;
     margin: 0;
@@ -43,9 +33,6 @@
     margin-bottom: 25px;
 }
 
-
-
-/* --- BUSCADOR PREDICTIVO (CORREGIDO) --- */
 
 .search-wrapper {
 
@@ -76,39 +63,20 @@
     flex-direction: column;
 }
 
-
-
 .result-item:hover {
-
     background-color: #eff6ff;
-
     padding-left: 20px;
-
 }
-
-
 
 .result-item strong {
-
     color: #1e293b;
-
     font-size: 14px;
-
 }
-
-
 
 .result-item small {
-
     color: #64748b;
-
     font-size: 12px;
-
 }
-
-
-
-/* --- CONTENEDOR DE FILTROS --- */
 
 .filters-container {
 
@@ -116,7 +84,7 @@
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    overflow: visible !important; /* CRÍTICO: Permite que el buscador se vea */
+    overflow: visible !important; 
     margin-bottom: 30px;
 
 }
@@ -171,22 +139,14 @@
 
 
 .date-item span {
-
     font-size: 10px;
-
     color: #94a3b8;
-
     display: block;
-
     margin-bottom: 2px;
 
 }
 
-
-
-/* --- BOTONES --- */
-
-..filter-actions-column {
+.filter-actions-column {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -221,11 +181,9 @@
     cursor: pointer;
 }
 
-
-/* --- TABLAS Y TARJETAS --- */
 .report-card-box {
     background: #ffffff;
-    border-radius: 15px; /* Sincronizado */
+    border-radius: 15px; 
     border: 1px solid #e2e8f0;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     margin-bottom: 30px;
@@ -276,7 +234,6 @@
     background-color: #f8fafc;
 }
 
-/* --- ELEMENTOS ESPECIALES --- */
 .med-badge {
     background-color: #eef2ff;
     color: #4338ca;
@@ -305,7 +262,6 @@
     color: #10b981 !important;
 }
 
-/* Mensaje cuando no hay datos */
 .no-data-msg {
     padding: 40px;
     text-align: center;
@@ -314,7 +270,6 @@
     font-style: italic;
 }
 
-/* Botón Excel */
 .btn-excel-custom {
     background-color: #2ecc71;
     color: white;
@@ -358,15 +313,6 @@
 
 }
 
-
-
 .alerta.ok {
-
   background: #2ecc71;
-
-} y el fondo * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-
-}
+} 

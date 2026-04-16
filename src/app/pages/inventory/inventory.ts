@@ -113,17 +113,24 @@ actualizar() {
   this.limpiar();
 }
 
-  // este es el del boton Eliminar
-  borrar() {
-    if (this.newMedicine.id) {
-      if (confirm('¿Desea borrar este medicamento?')) {
-        this.servicio.deleteMedicine(this.newMedicine.id);
-        this.limpiar();
-      }
-    } else {
-      alert('Primero seleccione un producto de la tabla');
-    }
+  // Eliminar
+borrar() {
+
+  if (!this.newMedicine.id) {
+    this.mensaje = 'Seleccione un producto';
+    this.error = true;
+    return;
   }
+
+  if (confirm('¿Desea borrar este medicamento?')) {
+    this.servicio.deleteMedicine(this.newMedicine.id);
+
+    this.mensaje = 'Eliminado correctamente';
+    this.error = false;
+
+    this.limpiar();
+  }
+}
 
   // para el buscador
   buscar(event: any) {

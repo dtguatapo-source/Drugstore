@@ -15,22 +15,16 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './sales.css'
 })
 export class Sales {
-
   mensaje: string = '';
   error: boolean = false;
-
-
   private salesService = inject(SalesService);
   private medicineService = inject(MedicineService);
-
   sales$: Observable<Sale[]>;
   medicines: Medicine[] = [];
   filteredMedicines: any[] = [];
   cart: any[] = [];
-
   searchText: string = '';
   selectedMedicine?: any;
-
   customer = {
     name: '',
     idNumber: '',
