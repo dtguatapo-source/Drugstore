@@ -1,32 +1,43 @@
 @if (mostrarLayout) {
-  <!-- header con el menu principal -->
-  <header>
-    <nav>
-      <div class="LinksNav">
-        <!-- links para navegar en la app -->
-        <a class="btn-fondo" routerLink="/inventory" routerLinkActive="activo">Inventario</a>
-        <a class="btn-fondo" routerLink="/sales" routerLinkActive="activo">Ventas</a>
-        <a class="btn-fondo" routerLink="/purchases" routerLinkActive="activo">Compras</a>
-        <a class="btn-fondo" routerLink="/reports" routerLinkActive="activo">Informes</a>
+  <header class="main-header">
+    <nav class="navbar">
+      
+      <div class="logo-container" routerLink="/inicio">
+        <div class="logo-circulo">
+          <img src="iconos/flor.png" alt="logo">
+        </div>
+        <span class="nombre-sistema">SISTEMA DROGUERÍA PILI</span>
       </div>
+
+      <div class="LinksNav">
+        <a class="nav-link" routerLink="/inicio" routerLinkActive="activo">Inicio</a>
+        <a class="nav-link" routerLink="/inventory" routerLinkActive="activo">Inventario</a>
+        <a class="nav-link" routerLink="/purchases" routerLinkActive="activo">Compras</a>
+        <a class="nav-link" routerLink="/sales" routerLinkActive="activo">Ventas</a>
+        <a class="nav-link" routerLink="/reports" routerLinkActive="activo">Informes</a>
+      </div>
+
+      <div class="user-section">
+        <span class="admin-badge">Admin</span>
+      </div>
+
     </nav>
   </header>
 }
 
-<main>
-  <!-- aqui se cargan las paginas -->
+<main class="content">
   <router-outlet></router-outlet>
 </main>
 
 @if (mostrarLayout) {
   <!-- footer de la pagina -->
-  <footer class="footer">
+  <footer class="footer" >
     <p>© 2026 Droguería Pili Todos los derechos reservados</p>
 
     <!-- redes sociales -->
     <div class="social">
-      <a href="https://www.instagram.com/tu-usuario">
-        <img src="assets/Instagram.png" alt="Instagram">
+      <a href="https://www.instagram.com">
+        <img src="/iconos/Instagram.png" alt="Instagram">    
       </a>
     </div>
   </footer>

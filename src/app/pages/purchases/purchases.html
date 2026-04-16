@@ -21,7 +21,7 @@
 
   <div class="card">
     <p class="section-title">BUSCAR MEDICAMENTO</p>
-    
+
     <div class="grid-row">
       <div class="field">
         <label>SELECCIONAR</label>
@@ -55,7 +55,7 @@
         <label>PRECIO VENTA</label>
         <input type="number" [(ngModel)]="newPurchase.salePrice">
       </div>
-      
+
       <div class="field-button">
         <button type="button" class="btn-add-circle" (click)="meterALista()">
           +
@@ -107,4 +107,9 @@
       Volver
     </button>
   </div>
+
+  <div *ngIf="mensaje" class="alerta" [class.ok]="!error">
+    {{ mensaje }}
+  </div>
+
 </div>

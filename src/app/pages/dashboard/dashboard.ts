@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 
 @Component({
@@ -8,15 +8,25 @@ import { RouterLink, Router } from '@angular/router';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css' 
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
 
-  // router para poder cambiar de pagina
   private router = inject(Router);
 
-  // funcion para salir
+  ngOnInit() {
+
+    // validar si esta logueado
+    const login = localStorage.getItem('login');
+
+    if (!login) {
+      this.router.navigate(['/login']);
+    }
+  }
+
   salir() {
 
-    // volver al login
+    // eliminar sesion
+    localStorage.removeItem('login');
+
     this.router.navigate(['/login']); 
   }
 }

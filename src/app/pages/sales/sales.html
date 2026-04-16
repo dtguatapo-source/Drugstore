@@ -1,33 +1,128 @@
-<h2>Sales</h2>
+<div class="sales-container">
+  <div class="header-main">
+    <h1 class="main-title">Registro de Ventas</h1>
+    <div class="user-badge">Admin</div>
+  </div>
 
-<form (ngSubmit)="addSale()">
-  <label>Medicine ID:</label>
-  <input 
-    type="number" 
-    [(ngModel)]="newSale.medicineId" 
-    name="medicineId" 
-    required 
-  />
+  <div class="top-grid">
+    
+    <div class="card panel-cliente">
+      <div class="cliente-header">
+        <img src="iconos/usu.png" class="user-icon">
+        <p class="section-title">Datos del Cliente</p>
+      </div>
 
-  <label>Quantity:</label>
-  <input 
-    type="number" 
-    [(ngModel)]="newSale.quantity" 
-    name="quantity" 
-    required 
-  />
+      <div class="field">
+        <label>Nombre del Cliente</label>
+        <input type="text" [(ngModel)]="customer.name" placeholder="Seleccionar Cliente o 'Cliente General'">
+      </div>
 
-  <button type="submit">Add Sale</button>
-</form>
+      <div class="row-fields">
+        <div class="field">
+          <label>RUT / NIT</label>
+          <input type="text" [(ngModel)]="customer.idNumber" placeholder="Ej: 12.345.678-9">
+        </div>
+        <div class="field">
+          <label>Fecha de Venta</label>
+          <input type="date" [(ngModel)]="customer.date">
+        </div>
+      </div>
+    </div>
 
-<hr>
+    <div class="card panel-buscador">
+      <div class="search-header">
+        <p class="section-title">Buscador de Productos</p>
+        <span class="subtotal-mini">Subtotal: ${{totalCart | number}}</span>
+      </div>
 
-<ul>
-  <li *ngFor="let sale of sales$ | async">
-    <strong>ID:</strong> {{ sale.id }} |
-    <strong>Medicine:</strong> {{ sale.medicineId }} |
-    <strong>Quantity:</strong> {{ sale.quantity }} |
-    <strong>Total:</strong> {{ sale.total }} |
-    <strong>Date:</strong> {{ sale.date | date:'short' }}
-  </li>
-</ul>
+      <div class="search-box">
+        <input type="text" class="input-search" placeholder="Escriba el nombre, laboratorio o ID del producto..." 
+               [(ngModel)]="searchText" (input)="onSearch()">
+
+        <div class="search-results" *ngIf="filteredMedicines.length > 0">
+          <div class="result-item" *ngFor="let m of filteredMedicines" (click)="selectMed(m)">
+            <div class="result-info">
+              <span class="med-name">{{m.name}}</span>
+              <span class="med-lab">{{m.laboratory}}</span>
+            </div>
+            <span class="med-stock">Stock: {{m.stock}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-inputs-mini">
+        <div class="field">
+          <label>Cantidad</label>
+          <input type="number" [(ngModel)]="newSaleItem.quantity" class="input-bold">
+        </div>
+        <div class="field">
+          <label>Precio Unitario</label>
+          <input type="text" readonly [value]="selectedMedicine?.salePrice || 0" class="input-readonly">
+        </div>
+        <div class="field">
+          <label>Stock Disp.</label>
+          <input type="text" readonly [value]="selectedMedicine?.stock || 0" class="input-readonly">
+        </div>
+      </div>
+
+      <button class="btn-add-cart" (click)="addToCart()">+ AGREGAR A LA VENTA</button>
+    </div>
+
+  </div> <div class="bottom-grid">
+    
+    <div class="card panel-tabla">
+      <p class="section-title">Productos en la Venta Actual</p>
+      <div class="table-wrapper">
+        <table class="table-cart">
+          <thead>
+            <tr>
+              <th>Producto / Descripción</th>
+              <th>Código</th>
+              <th>Cant.</th>
+              <th>Precio Un.</th>
+              <th>Subtotal</th>
+              <th style="text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of cart; let i = index">
+              <td class="td-name">{{item.name}}</td>
+              <td class="td-id">MED-{{item.id}}</td>
+              <td>{{item.cantVenta}} uds</td>
+              <td>${{item.salePrice | number}}</td>
+              <td class="td-total">${{item.subtotal | number}}</td>
+              <td style="text-align: center;">
+                <button class="btn-del" (click)="removeFromCart(i)">
+                  <img src="iconos/basura.png" width="22">
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card panel-total">
+      <p class="section-title">Finalizar Venta</p>
+      
+      <div class="payment-row">
+        <span>Total a Pagar:</span>
+        <span class="amount">${{totalCart | number}}</span>
+      </div>
+
+      <div class="field">
+        <label>Descuento aplicado:</label>
+        <input type="number" placeholder="$ 0">
+      </div>
+
+      <div class="total-big-container">
+        <p>TOTAL A COBRAR</p>
+        <h1>${{totalCart | number}}</h1>
+      </div>
+
+      <button class="btn-complete" (click)="completeSale()">CONFIRMAR Y COBRAR</button>
+    </div>
+  </div>
+
+  <div *ngIf="mensaje" class="alerta" [class.ok]="!error">{{ mensaje }}</div>
+</div>

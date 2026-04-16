@@ -1,0 +1,202 @@
+/* RESET GENERAL PARA EVITAR QUE LOS PADDING AGOLPEN LOS TEXTOS */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.sales-container {
+    background-color: #f4f7fe;
+    padding: 30px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+/* GRIDS CON ESPACIO (GAP) AUMENTADO */
+.top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 25px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #edf2f7;
+}
+
+.section-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #1a237e;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ORGANIZACIÓN DE INPUTS: LABEL ARRIBA, INPUT ABAJO CON AIRE */
+.field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.field label {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px; /* Espacio entre etiqueta y caja */
+    color: #475569;
+    text-transform: uppercase;
+}
+
+input {
+    width: 100%;
+    padding: 12px 15px; /* Más padding interno para que el texto no toque bordes */
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 14px;
+    transition: border 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #1a237e;
+}
+
+input[readonly] {
+    background-color: #f1f5f9;
+    color: #64748b;
+}
+
+/* FILAS Y MINI GRIDS */
+.row-fields {
+    display: flex;
+    gap: 20px;
+}
+
+.row-fields .field {
+    flex: 1;
+}
+
+.search-box {
+    margin-bottom: 20px;
+}
+
+.grid-inputs-mini {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 5px;
+}
+
+/* BOTONES */
+.btn-add-cart {
+    background: #1a237e;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    width: 100%;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-complete {
+    background: #0d124a;
+    color: white;
+    padding: 18px;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+/* TABLA PROFESIONAL */
+.table-wrapper {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-cart {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-cart th {
+    background: #1a237e;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-size: 12px;
+}
+
+/* PANEL PAGO */
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.total-big {
+    text-align: right;
+    margin: 30px 0;
+}
+
+.total-big h1 {
+    font-size: 35px;
+    color: #1a237e;
+    font-weight: 900;
+}
+
+.alerta {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #e74c3c;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-weight: 500;
+}
+
+.alerta.ok {
+    background: #2ecc71;
+}
+
+.cliente-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #eef2ff;
+    padding: 5px;
+}

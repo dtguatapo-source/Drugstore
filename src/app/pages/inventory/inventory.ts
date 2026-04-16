@@ -10,9 +10,14 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [ NgFor, FormsModule, CommonModule],
   templateUrl: './inventory.html',
+  styleUrl: './inventory.css' 
+
 })
 export class Inventory {
+    
 
+    mensaje: string = '';
+    error: boolean = false;
   // llamamos al servicio y al router
   private servicio = inject(MedicineService);
   private router = inject(Router);
@@ -43,33 +48,70 @@ export class Inventory {
     return 'MED-' + Math.floor(Math.random() * 500);
   }
 
-  // este es el que llamas en el boton Registrar
-  registrar() {
-    if (this.newMedicine.name != '') {
-      // le ponemos un id antes de guardar
-      this.newMedicine.id = this.generarId();
-      this.servicio.addMedicine({ ...this.newMedicine });
-      
-      alert('Guardado con exito');
-      this.limpiar();
-    } else {
-      alert('El nombre no puede estar vacio');
-    }
+  // Registrar
+registrar() {
+
+  const m = this.newMedicine;
+
+  // validaciones
+  if (!m.name && !m.laboratory) {
+    this.mensaje = 'Campos vacíos';
+    this.error = true;
+    return;
   }
 
-  // cuando haces clic en la fila de la tabla
+  if (!m.name || !m.laboratory) {
+    this.mensaje = 'Complete los campos obligatorios';
+    this.error = true;
+    return;
+  }
+
+  if (m.stock < 0 || m.purchasePrice < 0 || m.salePrice < 0) {
+    this.mensaje = 'Valores no pueden ser negativos';
+    this.error = true;
+    return;
+  }
+
+  // evitar duplicados
+  const existe = this.listaMeds.some(x => x.name.toLowerCase() === m.name.toLowerCase());
+  if (existe) {
+    this.mensaje = 'El medicamento ya existe';
+    this.error = true;
+    return;
+  }
+
+  // guardar
+  this.newMedicine.id = this.generarId();
+  this.servicio.addMedicine({ ...this.newMedicine });
+
+  this.mensaje = 'Guardado con éxito';
+  this.error = false;
+
+  this.limpiar();
+}
+
+
+  // cuando se hace clic en la fila de la tabla
   seleccionar(m: Medicine) {
     this.newMedicine = { ...m };
   }
 
-  // este es el del boton Modificar
-  actualizar() {
-    if (this.newMedicine.id) {
-      this.servicio.updateMedicine({ ...this.newMedicine });
-      alert('Se actualizaron los datos');
-      this.limpiar();
-    }
+//actualizar
+actualizar() {
+
+  if (!this.newMedicine.id) {
+    this.mensaje = 'Seleccione un producto';
+    this.error = true;
+    return;
   }
+
+  this.servicio.updateMedicine({ ...this.newMedicine });
+
+  this.mensaje = 'Actualizado correctamente';
+  this.error = false;
+
+  this.limpiar();
+}
 
   // este es el del boton Eliminar
   borrar() {

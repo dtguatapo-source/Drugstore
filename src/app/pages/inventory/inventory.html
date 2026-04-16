@@ -1,5 +1,6 @@
 <div class="inventory-container">
 
+  <!-- navegacion -->
   <div class="header-seccion">
     <h2>Gestion de Inventario</h2>
 
@@ -8,10 +9,12 @@
     </div>
   </div>
 
+  
   <section class="tarjeta-blanca">
     <p class="titulo-gris">DATOS DEL MEDICAMENTO</p>
 
     <div class="grid-formulario">
+
       <div class="campo">
         <label>ID / CODIGO</label>
         <input type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automatico">
@@ -28,12 +31,12 @@
       </div>
 
       <div class="campo grande">
-        <label>PARA QUE SIRVE (DESCRIPCION)</label>
+        <label>DESCRIPCION</label>
         <input type="text" [(ngModel)]="newMedicine.description">
       </div>
 
       <div class="campo">
-        <label>STOCK INICIAL</label>
+        <label>STOCK</label>
         <input type="number" [(ngModel)]="newMedicine.stock">
       </div>
 
@@ -46,9 +49,11 @@
         <label>PRECIO VENTA</label>
         <input type="number" [(ngModel)]="newMedicine.salePrice">
       </div>
+
     </div>
   </section>
 
+  <!-- TABLA -->
   <section class="tarjeta-blanca">
     <p class="titulo-gris">INVENTARIO ACTUAL</p>
 
@@ -82,15 +87,27 @@
           </tr>
         </tbody>
       </table>
+
+      
+      <p *ngIf="listaMeds.length === 0" class="vacio">
+        No hay medicamentos registrados
+      </p>
+
     </div>
   </section>
 
+  
   <div class="botones-abajo">
     <button class="btn btn-mod" (click)="actualizar()">Modificar</button>
     <button class="btn btn-del" (click)="borrar()">Eliminar</button>
     <button class="btn btn-reg" (click)="registrar()">Registrar</button>
     <button class="btn btn-clear" (click)="limpiar()">Limpiar</button>
     <button class="btn btn-exit" (click)="irAlMenu()">Salir</button>
+  </div>
+
+  
+  <div *ngIf="mensaje" class="alerta" [class.ok]="!error">
+    {{ mensaje }}
   </div>
 
 </div>

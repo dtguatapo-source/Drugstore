@@ -1,6 +1,6 @@
 export interface Sale {
   id: number;
-  medicineId: number;
+  medicineId: string;
   quantity: number;
   total: number;
   date: Date;
