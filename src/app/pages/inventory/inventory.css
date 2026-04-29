@@ -1,10 +1,12 @@
+/* Contenedor principal */
 .inventory-container {
-    background-color: #f4f7fe !important;
+    background-color: #f4f7fe;
     padding: 30px;
     min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
 
+/* Encabezado y buscador alineados */
 .header-seccion {
     display: flex;
     justify-content: space-between;
@@ -12,82 +14,66 @@
     margin-bottom: 25px;
 }
 
-.header-seccion h2 {
-    color: #2d3748;
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-}
-
 .caja-busqueda input {
-    padding: 10px 20px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    width: 300px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #d1d9e6;
+    width: 320px;
     outline: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
+/* Tarjetas blancas con mejor sombra */
 .tarjeta-blanca {
-    background: #ffffff !important;
-    border-radius: 15px !important;
+    background: #ffffff;
+    border-radius: 12px;
     padding: 25px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
-    border: none !important;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .titulo-gris {
-    color: #a0aec0;
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-bottom: 1px solid #edf2f7;
-    padding-bottom: 10px;
+    color: #718096;
+    font-size: 13px;
+    font-weight: 700;
     margin-bottom: 20px;
+    text-transform: uppercase;
 }
 
+/* EL ARREGLO DEL DESORDEN: Grid de 3 columnas fijas */
 .grid-formulario {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas iguales */
+    gap: 25px; /* Espacio uniforme entre cuadros */
 }
 
+/* Hacemos que la descripción ocupe toda la fila si quieres, 
+   o la dejamos en su columna para que no rompa la línea */
 .campo {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.campo.grande {
-    grid-column: span 2; 
-}
-
 .campo label {
     font-size: 11px;
     color: #4a5bb3;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .campo input {
-    padding: 12px;
+    padding: 10px;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 6px;
     background-color: #f8fafc;
-    font-size: 14px;
-    outline: none;
-    transition: 0.3s;
+    width: 100%; /* Para que llenen su pedacito de columna */
+    box-sizing: border-box; /* Evita que se salgan del borde */
 }
 
-.campo input:focus {
-    border-color: #4a5bb3;
-    background-color: #fff;
-}
-
+/* Tabla con scroll y cabecera fija */
 .tabla-scroll {
-    overflow-x: auto;
-    border-radius: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 8px;
 }
 
 table {
@@ -95,73 +81,46 @@ table {
     border-collapse: collapse;
 }
 
-thead {
-    background-color: #4a5bb3 !important;
-    color: white !important;
-}
-
-th {
-    padding: 15px;
-    font-size: 12px;
+thead th {
+    background-color: #4a5bb3;
+    color: white;
+    padding: 12px;
     text-align: left;
-    text-transform: uppercase;
+    position: sticky;
+    top: 0;
 }
 
-td {
-    padding: 15px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #4a5568;
+tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
     font-size: 14px;
 }
 
-.etiqueta-estado {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.etiqueta-estado[data-status="Activo"] {
-    background-color: #e6fffa;
-    color: #38b2ac;
-}
-
-.etiqueta-estado[data-status="Bajo stock"] {
-    background-color: #fffaf0;
-    color: #dd6b20;
-}
-
-.etiqueta-estado[data-status="Sin stock"] {
-    background-color: #fff5f5;
-    color: #e53e3e;
-}
-
+/* Botones alineados al centro */
 .botones-abajo {
     display: flex;
-    gap: 12px;
-    margin-top: 10px;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .btn {
-    padding: 12px 25px;
-    border-radius: 10px;
+    padding: 10px 22px;
+    border-radius: 8px;
     border: none;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 14px;
+    min-width: 110px;
     transition: 0.2s;
 }
 
-.btn-mod { background-color: #4fd1c5; color: white; }
-.btn-del { background-color: #fed7d7; color: #e53e3e; }
 .btn-reg { background-color: #4a5bb3; color: white; }
-.btn-clear { background-color: #edf2f7; color: #4a5568; border: 1px solid #e2e8f0; }
-.btn-exit { background-color: white; color: #4a5bb3; border: 2px solid #4a5bb3; }
+.btn-mod { background-color: #4fd1c5; color: white; }
+.btn-del { background-color: #feb2b2; color: #9b2c2c; }
+.btn-clear { background-color: #edf2f7; color: #4a5568; }
+.btn-exit { background-color: white; border: 2px solid #4a5bb3; color: #4a5bb3; }
 
-.btn:hover {
-    filter: brightness(0.9);
-    transform: translateY(-2px);
-}
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
 .alerta {
     margin-top: 15px;
@@ -174,10 +133,4 @@ td {
 
 .alerta.ok {
     background: #28a745;
-}
-
-.vacio {
-    text-align: center;
-    margin-top: 10px;
-    color: #888;
 }

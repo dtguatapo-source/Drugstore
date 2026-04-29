@@ -11,27 +11,24 @@ import { filter } from 'rxjs/operators';
 })
 export class App {
 
-  // título básico de la app (lo dejo así por ahora)
+  // titulo de la app por ahora
   protected readonly title = signal('drugstore-system');
 
-  // variable para saber si se muestra el menú o no
-  // la dejo en false para que no se vea raro cuando carga el login
+  // variable para mostrar o no el menu
+  // inicia en falso para que no salga en el login
   mostrarLayout = false; 
 
   constructor(private router: Router) {
 
-    // aquí estoy escuchando cuando cambia la ruta
-    // (cada vez que navego a otra página)
+    // aqui escucho cuando cambia la ruta
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
 
-      // estas son las rutas donde NO quiero que salga el menú
-      // ejemplo: login o pantalla principal
-      const rutasSinMenu = ['/login', '/dashboard', '/']; 
+      // rutas donde no quiero mostrar el menu
+      const rutasSinMenu = ['/login', '/dashboard', '/register']; 
       
-      // si la ruta actual NO está en esa lista, entonces sí muestro el layout
-      // si está, entonces no lo muestro
+      // si la ruta no esta en la lista se muestra el menu
       this.mostrarLayout = !rutasSinMenu.includes(event.urlAfterRedirects);
     });
   }

@@ -42,12 +42,13 @@
           />
         </div>
 
-        <!-- BOTON CORRECTO -->
         <button type="submit">
           Ingresar
         </button>
 
-        <!-- BURBUJA -->
+        <div class="register-link">
+          <p>¿No tienes cuenta? <a (click)="irARegistro()">Regístrate aquí</a></p>
+        </div>
         <div *ngIf="error && intento" class="alerta">
           {{ mensaje }}
         </div>

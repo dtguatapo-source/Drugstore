@@ -1,0 +1,68 @@
+<div class="container">
+
+  <div class="left">
+    <div class="card">
+      <div class="logo">
+        <img src="iconos/flor.png" alt="flor">
+      </div>
+      <h1>Drogueria Pili</h1>
+      <p>REGISTRO DE USUARIOS</p>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="login-box">
+      <h2>Crear cuenta nueva</h2>
+
+      <form (ngSubmit)="registrar()">
+
+        <div class="input-group">
+          <label>Nuevo Usuario</label>
+          <input 
+            type="text" 
+            [(ngModel)]="nuevoUsuario" 
+            name="nuevoUsuario" 
+            placeholder="Ej: farmacia_pili"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input 
+            type="password" 
+            [(ngModel)]="nuevaPass" 
+            name="nuevaPass" 
+            placeholder="Crea una contraseña"
+            required
+          />
+        </div>
+
+        <div class="input-group">
+          <label>Confirmar Contraseña</label>
+          <input 
+            type="password" 
+            [(ngModel)]="confirmarPass" 
+            name="confirmarPass" 
+            placeholder="Repite la contraseña"
+            required
+          />
+        </div>
+
+        <button type="submit">
+          Registrar Usuario
+        </button>
+
+        <button type="button" class="btn-volver" (click)="volverAlLogin()">
+          Cancelar y Volver
+        </button>
+
+        <div *ngIf="error" class="alerta">
+          {{ mensaje }}
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

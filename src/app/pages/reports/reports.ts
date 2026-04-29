@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { take } from 'rxjs/operators';
 
-// Importamos solo lo de ventas y medicinas
 import { SalesService } from '../../services/sales.service';
 import { MedicineService } from '../../services/medicine.service';
 import { Sale } from '../../models/sale';
 import { Medicine } from '../../models/medicine';
+
+// --- AGREGAMOS ESTA IMPORTACIÓN ---
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-reports',
@@ -20,20 +22,16 @@ import { Medicine } from '../../models/medicine';
 })
 export class Reports implements OnInit {
 
-
   mensaje: string = '';
   error: boolean = false;
-
 
   medicines: Medicine[] = [];
   filteredMedicines: Medicine[] = [];
   selectedMedicine?: Medicine;
   searchText: string = '';
 
-
   fechaDesde: string = '';
   fechaHasta: string = '';
-
 
   filteredSales: Sale[] = [];
   reporteGenerado: boolean = false;
@@ -44,16 +42,41 @@ export class Reports implements OnInit {
   ) { }
 
   ngOnInit() {
-
     this.medicineService.medicines$.subscribe(data => this.medicines = data);
+  }
+
+  // --- NUEVA FUNCIÓN PARA EXCEL ---
+  exportarExcel() {
+    // Si no hay datos en la tabla, no exportamos nada
+    if (this.filteredSales.length === 0) {
+      this.mensaje = 'No hay datos en la tabla para exportar';
+      this.error = true;
+      return;
+    }
+
+    // Mapeamos los datos para que el Excel tenga títulos bonitos en español
+    const datosExcel = this.filteredSales.map(s => ({
+      'Fecha de Venta': new Date(s.date).toLocaleDateString(),
+      'Medicamento': this.getMedicineName(s.medicineId),
+      'Cantidad Vendida': s.quantity,
+      'Total de Venta': s.total
+    }));
+
+    // Proceso de creación del archivo
+    const hoja = XLSX.utils.json_to_sheet(datosExcel);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, 'Reporte de Ventas');
+
+    // Descarga el archivo
+    XLSX.writeFile(libro, 'Reporte_Ventas_Drogueria.xlsx');
+    
+    this.mensaje = 'Archivo Excel generado con éxito';
+    this.error = false;
   }
 
   // Buscador 
   onSearch() {
-
-
     this.selectedMedicine = undefined;
-
     if (this.searchText.length > 1) {
       this.filteredMedicines = this.medicines.filter(m =>
         m.name.toLowerCase().includes(this.searchText.toLowerCase())
@@ -63,40 +86,33 @@ export class Reports implements OnInit {
     }
   }
 
-
   selectMed(med: Medicine) {
     this.selectedMedicine = med;
     this.searchText = med.name;
     this.filteredMedicines = [];
   }
 
-  // Para mostrar el nombre en la tabla usando el ID
   getMedicineName(id: any): string {
     const med = this.medicines.find(m => m.id === id);
     return med ? med.name : 'Producto';
   }
 
-
   generarReporte() {
-
     if (!this.selectedMedicine) {
       this.mensaje = 'Debes seleccionar un medicamento';
       this.error = true;
       return;
     }
 
-    // validar fechas incompletas
     if ((this.fechaDesde && !this.fechaHasta) || (!this.fechaDesde && this.fechaHasta)) {
       this.mensaje = 'Debes seleccionar ambas fechas';
       this.error = true;
       return;
     }
 
-    // validar rango de fechas
     if (this.fechaDesde && this.fechaHasta) {
       const desde = new Date(this.fechaDesde);
       const hasta = new Date(this.fechaHasta);
-
       if (desde > hasta) {
         this.mensaje = 'La fecha "Desde" no puede ser mayor que "Hasta"';
         this.error = true;
@@ -111,23 +127,19 @@ export class Reports implements OnInit {
     this.salesService.sales$.pipe(take(1)).subscribe(allSales => {
       this.filteredSales = allSales.filter(s => {
         const coincideMed = s.medicineId === idSeleccionado;
-
         const fechaVenta = new Date(s.date);
         const coincideFecha =
           (!desde || fechaVenta >= desde) &&
           (!hasta || fechaVenta <= hasta);
-
         return coincideMed && coincideFecha;
       });
 
       this.reporteGenerado = true;
-
       this.mensaje = 'Reporte generado';
       this.error = false;
     });
   }
 
-  // Resetear todo
   limpiarFiltros() {
     this.searchText = '';
     this.selectedMedicine = undefined;

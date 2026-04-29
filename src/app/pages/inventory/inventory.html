@@ -1,62 +1,49 @@
 <div class="inventory-container">
 
-  <!-- navegacion -->
   <div class="header-seccion">
-    <h2>Gestion de Inventario</h2>
+    <h2>Gestión de Inventario</h2>
 
     <div class="caja-busqueda">
-      <input type="text" placeholder="Filtrar por nombre..." (input)="buscar($event)">
+      <input type="text" placeholder="Filtrar por nombre o ID..." (input)="buscar($event)">
     </div>
   </div>
 
-  
   <section class="tarjeta-blanca">
     <p class="titulo-gris">DATOS DEL MEDICAMENTO</p>
-
     <div class="grid-formulario">
-
       <div class="campo">
         <label>ID / CODIGO</label>
-        <input type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automatico">
+        <input type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automático">
       </div>
-
       <div class="campo grande">
         <label>NOMBRE COMERCIAL</label>
         <input type="text" [(ngModel)]="newMedicine.name">
       </div>
-      
       <div class="campo">
         <label>LABORATORIO</label>
         <input type="text" [(ngModel)]="newMedicine.laboratory">
       </div>
-
       <div class="campo grande">
-        <label>DESCRIPCION</label>
+        <label>DESCRIPCIÓN</label>
         <input type="text" [(ngModel)]="newMedicine.description">
       </div>
-
       <div class="campo">
         <label>STOCK</label>
         <input type="number" [(ngModel)]="newMedicine.stock">
       </div>
-
       <div class="campo">
         <label>PRECIO COMPRA</label>
         <input type="number" [(ngModel)]="newMedicine.purchasePrice">
       </div>
-
       <div class="campo">
         <label>PRECIO VENTA</label>
         <input type="number" [(ngModel)]="newMedicine.salePrice">
       </div>
-
     </div>
   </section>
 
-  <!-- TABLA -->
   <section class="tarjeta-blanca">
     <p class="titulo-gris">INVENTARIO ACTUAL</p>
-
     <div class="tabla-scroll">
       <table>
         <thead>
@@ -70,7 +57,6 @@
             <th>ESTADO</th>
           </tr>
         </thead>
-
         <tbody>
           <tr *ngFor="let m of listaMeds" (click)="seleccionar(m)" style="cursor: pointer;">
             <td>{{ m.id }}</td>
@@ -87,16 +73,10 @@
           </tr>
         </tbody>
       </table>
-
-      
-      <p *ngIf="listaMeds.length === 0" class="vacio">
-        No hay medicamentos registrados
-      </p>
-
+      <p *ngIf="listaMeds.length === 0" class="vacio">No se encontraron resultados</p>
     </div>
   </section>
 
-  
   <div class="botones-abajo">
     <button class="btn btn-mod" (click)="actualizar()">Modificar</button>
     <button class="btn btn-del" (click)="borrar()">Eliminar</button>
@@ -105,9 +85,7 @@
     <button class="btn btn-exit" (click)="irAlMenu()">Salir</button>
   </div>
 
-  
   <div *ngIf="mensaje" class="alerta" [class.ok]="!error">
     {{ mensaje }}
   </div>
-
 </div>

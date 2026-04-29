@@ -1,4 +1,4 @@
-/* contenedor principal */
+/* Copiamos tu base del login */
 .container {
     display: flex;
     height: 100vh;
@@ -72,23 +72,23 @@
 
 .login-box h2 {
     font-size: 35px;
-    margin-bottom: 40px;
+    margin-bottom: 30px; /* Reducido un poco para que quepan más campos */
     text-align: center;
 }
 
 .input-group {
-    margin-bottom: 25px;
+    margin-bottom: 15px; /* Reducido de 25px a 15px para que no se salga de la pantalla */
 }
 
 .input-group label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-size: 14px;
 }
 
 .input-group input {
     width: 100%;
-    padding: 15px;
+    padding: 12px; /* Reducido un poco para ahorrar espacio */
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
@@ -97,64 +97,49 @@
     outline: none;
 }
 
+/* Estilo para los botones */
 button {
     width: 100%;
-    padding: 18px;
+    padding: 15px;
     background: white;
     color: #4a54a4;
     border: none;
     border-radius: 50px;
     cursor: pointer;
     font-size: 18px;
-    margin-top: 20px;
+    margin-top: 15px;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+button:hover {
+    transform: scale(1.02);
+}
+
+/* Botón especial para volver al login */
+.btn-volver {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    font-size: 16px;
+}
+
+.btn-volver:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .alerta {
     margin-top: 15px;
-    padding: 14px;
+    padding: 12px;
     background: #ff4d4d;
     color: white;
     border-radius: 12px;
     text-align: center;
     font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     animation: aparecer 0.3s ease;
 }
 
 @keyframes aparecer {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-/* Estilo para el link de registro */
-.register-link {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.register-link p {
-    color: rgba(255, 255, 255, 0.8); /* Blanco suave */
-    font-size: 14px;
-}
-
-.register-link a {
-    color: white;
-    font-weight: bold;
-    text-decoration: none;
-    cursor: pointer;
-    border-bottom: 1px solid white; /* Una linea abajo para que parezca link */
-    padding-bottom: 2px;
-    transition: all 0.3s ease;
-}
-
-.register-link a:hover {
-    color: #f0f9f9;
-    border-bottom-color: transparent;
-    font-size: 15px; /* Un pequeño efecto al pasar el mouse */
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

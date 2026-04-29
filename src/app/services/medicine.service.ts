@@ -18,7 +18,7 @@ export class MedicineService {
   private medicines = new BehaviorSubject<Medicine[]>(this.initialMedicines);
   medicines$ = this.medicines.asObservable();
 
-  //crud 
+  
   // medicamentos agregado 
   addMedicine(medicine: Medicine) {
     const current = this.medicines.value;
