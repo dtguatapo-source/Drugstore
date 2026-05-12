@@ -200,3 +200,130 @@ tbody td {
         opacity: 1;
     }
 }
+/* =========================
+   RESPONSIVE CELULAR
+========================= */
+
+@media (max-width: 768px) {
+
+    /* CONTENEDORES PRINCIPALES */
+    .container,
+    .top-grid,
+    .bottom-grid,
+    .grid-row,
+    .row-fields,
+    .reports-header,
+    .header-main,
+    .filter-grid,
+    .date-inputs-row,
+    .footer-actions {
+        flex-direction: column !important;
+        display: flex !important;
+        gap: 15px;
+    }
+
+    /* LOGIN */
+    .left {
+        display: none;
+    }
+
+    .right {
+        width: 100%;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .login-box {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    .login-box h2 {
+        font-size: 28px;
+    }
+
+    /* TARJETAS */
+    .card,
+    .report-card-box,
+    .filters-container {
+        width: 100%;
+        padding: 20px !important;
+    }
+
+    /* INPUTS */
+    input,
+    .form-select,
+    button {
+        font-size: 16px;
+        width: 100%;
+    }
+
+    /* TABLAS */
+    .table-wrapper,
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table,
+    .report-custom-table,
+    .table-cart {
+        min-width: 700px;
+    }
+
+    /* TITULOS */
+    .main-title,
+    h1,
+    h2 {
+        font-size: 22px !important;
+        text-align: center;
+    }
+
+    /* GRID PRODUCTOS */
+    .grid-inputs-mini {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* FILTROS */
+    .filter-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* CAMPOS */
+    .field {
+        min-width: 100%;
+    }
+
+    /* BOTONES */
+    .btn-save,
+    .btn-exit,
+    .btn-complete,
+    .btn-action-primary,
+    .btn-action-secondary,
+    .btn-excel-custom {
+        width: 100%;
+    }
+
+    /* HEADER */
+    .reports-header,
+    .header-main {
+        align-items: flex-start;
+    }
+
+    /* BADGES */
+    .user-badge {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* TOTALES */
+    .total-big-container h1 {
+        font-size: 28px;
+    }
+
+    /* ALERTAS */
+    .alert-box {
+        width: 90%;
+        min-width: unset;
+    }
+
+}
