@@ -15,140 +15,247 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './sales.css'
 })
 export class Sales {
+
   mensaje: string = '';
   error: boolean = false;
+
   private salesService = inject(SalesService);
   private medicineService = inject(MedicineService);
+
   sales$: Observable<Sale[]>;
+
   medicines: Medicine[] = [];
   filteredMedicines: any[] = [];
   cart: any[] = [];
+
   searchText: string = '';
   selectedMedicine?: any;
+
   customer = {
     name: '',
     idNumber: '',
     date: new Date().toISOString().split('T')[0]
   };
 
-  newSaleItem = { quantity: 1 };
+  newSaleItem = {
+    quantity: 1
+  };
+
+  // para controlar las alertas
+  private timeoutRef: any;
 
   constructor() {
+
     this.sales$ = this.salesService.sales$;
+
     this.medicineService.medicines$.subscribe(data => {
       this.medicines = data;
     });
   }
 
-  // buscador
+  // =========================
+  // BUSCADOR
+  // =========================
   onSearch() {
-    if (this.searchText.length > 1) {
-      this.filteredMedicines = this.medicines.map(m => {
-        const enCarrito = this.cart
-          .filter(item => item.id === m.id)
-          .reduce((acc, item) => acc + item.cantVenta, 0);
 
-        return { ...m, stockDisponible: m.stock - enCarrito };
-      }).filter(m =>
-        (m.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-          m.laboratory.toLowerCase().includes(this.searchText.toLowerCase())) &&
-        m.stockDisponible > 0
-      );
+    if (this.searchText.length > 1) {
+
+      this.filteredMedicines = this.medicines
+        .map(m => {
+
+          const enCarrito = this.cart
+            .filter(item => item.id === m.id)
+            .reduce((acc, item) => acc + item.cantVenta, 0);
+
+          return {
+            ...m,
+            stockDisponible: m.stock - enCarrito
+          };
+
+        })
+        .filter(m =>
+          (
+            m.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+            m.laboratory.toLowerCase().includes(this.searchText.toLowerCase())
+          )
+          &&
+          m.stockDisponible > 0
+        );
+
     } else {
+
       this.filteredMedicines = [];
     }
   }
 
-  // seleccionar medicamento
+  // =========================
+  // SELECCIONAR MEDICAMENTO
+  // =========================
   selectMed(med: any) {
+
     this.selectedMedicine = med;
+
     this.searchText = med.name;
+
     this.filteredMedicines = [];
   }
 
-  // agregar al carrito
+  // =========================
+  // AGREGAR AL CARRITO
+  // =========================
   addToCart() {
 
-    this.mensaje = '';
-    this.error = false;
-
     if (!this.selectedMedicine) {
-      this.mensaje = 'Seleccione un producto';
-      this.error = true;
+
+      this.mostrarAlerta('Seleccione un producto', true);
       return;
     }
 
     if (this.newSaleItem.quantity <= 0) {
-      this.mensaje = 'Cantidad inválida';
-      this.error = true;
+
+      this.mostrarAlerta('Cantidad inválida', true);
       return;
     }
 
-    const stockReal = this.selectedMedicine.stockDisponible ?? this.selectedMedicine.stock;
+    const stockReal =
+      this.selectedMedicine.stockDisponible ??
+      this.selectedMedicine.stock;
 
     if (stockReal < this.newSaleItem.quantity) {
-      this.mensaje = 'Stock insuficiente';
-      this.error = true;
+
+      this.mostrarAlerta('Stock insuficiente', true);
       return;
     }
 
     this.cart.push({
+
       ...this.selectedMedicine,
+
       cantVenta: this.newSaleItem.quantity,
-      subtotal: this.selectedMedicine.salePrice * this.newSaleItem.quantity
+
+      subtotal:
+        this.selectedMedicine.salePrice *
+        this.newSaleItem.quantity
     });
 
-    this.mensaje = 'Producto agregado';
-    this.error = false;
+    this.mostrarAlerta('Producto agregado correctamente', false);
 
+    // limpiar formulario
     this.selectedMedicine = undefined;
     this.searchText = '';
     this.newSaleItem.quantity = 1;
   }
 
-  // total
+  // =========================
+  // TOTAL DEL CARRITO
+  // =========================
   get totalCart() {
-    return this.cart.reduce((acc, item) => acc + item.subtotal, 0);
+
+    return this.cart.reduce(
+      (acc, item) => acc + item.subtotal,
+      0
+    );
   }
 
-  // eliminar del carrito
+  // =========================
+  // ELIMINAR DEL CARRITO
+  // =========================
   removeFromCart(index: number) {
+
     this.cart.splice(index, 1);
+
+    this.mostrarAlerta('Producto eliminado', false);
   }
 
-  // completar venta
+  // =========================
+  // COMPLETAR VENTA
+  // =========================
   completeSale() {
 
     if (this.cart.length === 0) {
-      this.mensaje = 'No hay productos en la venta';
-      this.error = true;
+
+      this.mostrarAlerta(
+        'No hay productos en la venta',
+        true
+      );
+
       return;
     }
 
     this.cart.forEach(item => {
-      const medicineToUpdate = this.medicines.find(m => m.id === item.id);
+
+      const medicineToUpdate =
+        this.medicines.find(m => m.id === item.id);
 
       if (medicineToUpdate) {
+
+        // descontar stock
         medicineToUpdate.stock -= item.cantVenta;
 
+        // crear venta
         const sale: Sale = {
+
           id: Date.now() + Math.random(),
+
           medicineId: medicineToUpdate.id,
+
           quantity: item.cantVenta,
+
           total: item.subtotal,
+
           date: new Date()
         };
 
+        // guardar venta
         this.salesService.addSale(sale);
-        this.medicineService.updateMedicine(medicineToUpdate);
+
+        // actualizar inventario
+        this.medicineService.updateMedicine(
+          medicineToUpdate
+        );
       }
     });
 
+    // limpiar todo
     this.cart = [];
     this.searchText = '';
     this.filteredMedicines = [];
+    this.selectedMedicine = undefined;
 
-    this.mensaje = 'Venta realizada correctamente';
-    this.error = false;
+    this.customer = {
+      name: '',
+      idNumber: '',
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    this.newSaleItem.quantity = 1;
+
+    this.mostrarAlerta(
+      'Venta realizada correctamente',
+      false
+    );
+  }
+
+  // =========================
+  // ALERTAS
+  // =========================
+  mostrarAlerta(msg: string, esError: boolean) {
+
+    this.mensaje = msg;
+
+    this.error = esError;
+
+    clearTimeout(this.timeoutRef);
+
+    this.timeoutRef = setTimeout(() => {
+
+      this.mensaje = '';
+
+    }, 2000);
+  }
+
+  cerrarAlerta() {
+
+    this.mensaje = '';
   }
 }

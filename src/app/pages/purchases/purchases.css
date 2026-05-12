@@ -133,15 +133,64 @@ td {
     cursor: pointer;
 }
 
-.alerta {
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    text-align: center;
-    color: white;
-    background: #ff4d4d;
+
+/* FONDO OSCURO */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0, 0, 0, 0.4);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
 }
 
-.alerta.ok {
-    background: #28a745;
+/* CAJA CENTRADA */
+.alert-box {
+    background: white;
+    padding: 25px 35px;
+    border-radius: 15px;
+    text-align: center;
+    min-width: 300px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+    animation: aparecer 0.3s ease;
+}
+
+/* COLORES */
+.alert-box.error {
+    border-left: 6px solid #e74c3c;
+}
+
+.alert-box.ok {
+    border-left: 6px solid #2ecc71;
+}
+
+.alert-box button {
+    margin-top: 15px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #4a5bb3;
+    color: white;
+    cursor: pointer;
+}
+
+/* ANIMACIÓN */
+@keyframes aparecer {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }

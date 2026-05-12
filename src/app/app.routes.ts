@@ -8,7 +8,7 @@ import { Reports} from './pages/reports/reports';
 import { Register } from './pages/register/register'; 
 
 export const routes: Routes = [
-  { path: '', component: Login },
+  { path: '', redirectTo: 'login', pathMatch: 'full' }, 
   { path: 'login', component: Login }, 
   { path: 'register', component: Register },
   { path: 'dashboard', component: Dashboard },
@@ -16,5 +16,5 @@ export const routes: Routes = [
   { path: 'sales', component: Sales },
   { path: 'purchases', component: Purchases },
   { path: 'reports', component: Reports },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: 'login' }
 ];

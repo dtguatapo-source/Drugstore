@@ -19,16 +19,16 @@ export class Purchases {
   mensaje: string = '';
   error: boolean = false;
 
+  private timeoutRef: any;
+
   private medService = inject(MedicineService);
   private purchaseService = inject(PurchaseService);
   private router = inject(Router);
 
-  // variables globales del componente
   tablaTemporal: any[] = [];
   listaMedicamentos: Medicine[] = [];
   medEncontrado?: Medicine;
 
-  // modelo para el formulario
   newPurchase: any = {
     date: '',
     provider: '',
@@ -40,7 +40,6 @@ export class Purchases {
   };
 
   constructor() {
-    // para tener los medicamentos actualizados
     this.medService.medicines$.subscribe(data => {
       this.listaMedicamentos = data;
     });
@@ -60,65 +59,53 @@ export class Purchases {
     const p = this.newPurchase;
 
     if (!p.provider && !p.invoiceNumber && !p.date) {
-      this.mensaje = 'Complete los datos de la compra';
-      this.error = true;
+      this.mostrarAlerta('Complete los datos de la compra', true);
       return;
     }
 
     if (!p.provider || !p.invoiceNumber) {
-      this.mensaje = 'Falta proveedor o factura';
-      this.error = true;
+      this.mostrarAlerta('Falta proveedor o factura', true);
       return;
     }
 
     if (!p.medicineId && p.quantity <= 0) {
-      this.mensaje = 'Seleccione producto y cantidad';
-      this.error = true;
+      this.mostrarAlerta('Seleccione producto y cantidad', true);
       return;
     }
 
     if (!p.medicineId) {
-      this.mensaje = 'Seleccione un medicamento';
-      this.error = true;
+      this.mostrarAlerta('Seleccione un medicamento', true);
       return;
     }
 
     if (p.quantity <= 0) {
-      this.mensaje = 'Cantidad inválida';
-      this.error = true;
+      this.mostrarAlerta('Cantidad inválida', true);
       return;
     }
 
     if (p.purchasePrice < 0 || p.salePrice < 0) {
-      this.mensaje = 'Precios no pueden ser negativos';
-      this.error = true;
+      this.mostrarAlerta('Precios no pueden ser negativos', true);
       return;
     }
 
-    this.tablaTemporal.push({
-      ...p
-    });
+    this.tablaTemporal.push({ ...p });
 
-    this.mensaje = 'Producto agregado';
-    this.error = false;
+    this.mostrarAlerta('Producto agregado', false);
 
     this.newPurchase.medicineId = '';
     this.newPurchase.quantity = 0;
     this.medEncontrado = undefined;
   }
 
-
   guardarCompra() {
 
     if (this.tablaTemporal.length === 0) {
-      this.mensaje = 'No hay productos en la lista';
-      this.error = true;
+      this.mostrarAlerta('No hay productos en la lista', true);
       return;
     }
 
     if (!this.newPurchase.provider || !this.newPurchase.invoiceNumber) {
-      this.mensaje = 'Complete datos de la compra';
-      this.error = true;
+      this.mostrarAlerta('Complete datos de la compra', true);
       return;
     }
 
@@ -153,13 +140,26 @@ export class Purchases {
       salePrice: 0
     };
 
-    this.mensaje = 'Compra registrada correctamente';
-    this.error = false;
+    this.mostrarAlerta('Compra registrada correctamente', false);
 
     this.tablaTemporal = [];
   }
 
-  //  mostrar texto en la tabla
+  mostrarAlerta(msg: string, esError: boolean) {
+    this.mensaje = msg;
+    this.error = esError;
+
+    clearTimeout(this.timeoutRef);
+
+    this.timeoutRef = setTimeout(() => {
+      this.mensaje = '';
+    }, 2000);
+  }
+
+  cerrarAlerta() {
+    this.mensaje = '';
+  }
+
   obtenerNombre(id: string) { return this.listaMedicamentos.find(m => m.id === id)?.name || '---'; }
   obtenerLab(id: string) { return this.listaMedicamentos.find(m => m.id === id)?.laboratory || '---'; }
   obtenerDesc(id: string) { return this.listaMedicamentos.find(m => m.id === id)?.description || '---'; }

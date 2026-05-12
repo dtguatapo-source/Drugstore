@@ -4,7 +4,7 @@ import { Medicine } from '../models/medicine';
 
 @Injectable({ providedIn: 'root' })
 export class MedicineService {
-  
+  //con una lista para inciiar 
   private initialMedicines: Medicine[] = [
     { id: 'MED-001', name: 'Ibuprofeno 400mg', laboratory: 'Genfar', description: 'Analgésico', stock: 120, purchasePrice: 2500, salePrice: 3800, status: 'Activo' },
     { id: 'MED-002', name: 'Acetaminofén 500mg', laboratory: 'Bayer', description: 'Antipirético', stock: 15, purchasePrice: 1200, salePrice: 1900, status: 'Bajo stock' },
@@ -15,11 +15,11 @@ export class MedicineService {
     { id: 'MED-007', name: 'Quetiapina 500mg', laboratory: 'MK', description: 'Sedante', stock: 0, purchasePrice: 5000, salePrice: 7000, status: 'Sin stock' }
   ];
 
-  private medicines = new BehaviorSubject<Medicine[]>(this.initialMedicines);
+  private medicines = new BehaviorSubject<Medicine[]>(this.initialMedicines);//guarda y actualiza cuando cambie 
   medicines$ = this.medicines.asObservable();
 
   
-  // medicamentos agregado 
+  //  agrego
   addMedicine(medicine: Medicine) {
     const current = this.medicines.value;
     
@@ -29,14 +29,14 @@ export class MedicineService {
     this.medicines.next([...current, medicine]);
   }
 
-  // -eliminar 
+  // elimino
   deleteMedicine(id: string) {
     const current = this.medicines.value;
     const updated = current.filter(m => m.id !== id);
     this.medicines.next(updated);
   }
 
-  // modifica pero se debe seleccionar 
+  // se modifica pero se debe seleccionar 
   updateMedicine(updatedMedicine: Medicine) {
     const current = this.medicines.value;
     updatedMedicine.status = this.calcularEstado(updatedMedicine.stock);
@@ -48,6 +48,7 @@ export class MedicineService {
     }
   }
 
+//calculamos el stocjj
 
   private calcularEstado(stock: number): 'Activo' | 'Bajo stock' | 'Sin stock' {
     if (stock === 0) return 'Sin stock';
@@ -55,8 +56,10 @@ export class MedicineService {
     return 'Activo';
   }
 
-        // En medicine.service.ts
+        // esto de medicine.service.ts
       getMedicinesValue(): Medicine[] {
         return this.medicines.value;
       }
 }
+
+//este servicio central del inventario 

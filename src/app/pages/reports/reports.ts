@@ -3,13 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { take } from 'rxjs/operators';
-
 import { SalesService } from '../../services/sales.service';
 import { MedicineService } from '../../services/medicine.service';
 import { Sale } from '../../models/sale';
 import { Medicine } from '../../models/medicine';
-
-// --- AGREGAMOS ESTA IMPORTACIÓN ---
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -24,6 +21,8 @@ export class Reports implements OnInit {
 
   mensaje: string = '';
   error: boolean = false;
+
+  private timeoutRef: any;
 
   medicines: Medicine[] = [];
   filteredMedicines: Medicine[] = [];
@@ -45,16 +44,27 @@ export class Reports implements OnInit {
     this.medicineService.medicines$.subscribe(data => this.medicines = data);
   }
 
-  // --- NUEVA FUNCIÓN PARA EXCEL ---
+  mostrarAlerta(msg: string, esError: boolean = false) {
+    this.mensaje = msg;
+    this.error = esError;
+
+    clearTimeout(this.timeoutRef);
+
+    this.timeoutRef = setTimeout(() => {
+      this.mensaje = '';
+    }, 2000);
+  }
+
+  cerrarAlerta() {
+    this.mensaje = '';
+  }
+
   exportarExcel() {
-    // Si no hay datos en la tabla, no exportamos nada
     if (this.filteredSales.length === 0) {
-      this.mensaje = 'No hay datos en la tabla para exportar';
-      this.error = true;
+      this.mostrarAlerta('No hay datos en la tabla para exportar', true);
       return;
     }
 
-    // Mapeamos los datos para que el Excel tenga títulos bonitos en español
     const datosExcel = this.filteredSales.map(s => ({
       'Fecha de Venta': new Date(s.date).toLocaleDateString(),
       'Medicamento': this.getMedicineName(s.medicineId),
@@ -62,21 +72,18 @@ export class Reports implements OnInit {
       'Total de Venta': s.total
     }));
 
-    // Proceso de creación del archivo
     const hoja = XLSX.utils.json_to_sheet(datosExcel);
     const libro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(libro, hoja, 'Reporte de Ventas');
 
-    // Descarga el archivo
     XLSX.writeFile(libro, 'Reporte_Ventas_Drogueria.xlsx');
-    
-    this.mensaje = 'Archivo Excel generado con éxito';
-    this.error = false;
+
+    this.mostrarAlerta('Archivo Excel generado con éxito');
   }
 
-  // Buscador 
   onSearch() {
     this.selectedMedicine = undefined;
+
     if (this.searchText.length > 1) {
       this.filteredMedicines = this.medicines.filter(m =>
         m.name.toLowerCase().includes(this.searchText.toLowerCase())
@@ -99,23 +106,21 @@ export class Reports implements OnInit {
 
   generarReporte() {
     if (!this.selectedMedicine) {
-      this.mensaje = 'Debes seleccionar un medicamento';
-      this.error = true;
+      this.mostrarAlerta('Debes seleccionar un medicamento', true);
       return;
     }
 
     if ((this.fechaDesde && !this.fechaHasta) || (!this.fechaDesde && this.fechaHasta)) {
-      this.mensaje = 'Debes seleccionar ambas fechas';
-      this.error = true;
+      this.mostrarAlerta('Debes seleccionar ambas fechas', true);
       return;
     }
 
     if (this.fechaDesde && this.fechaHasta) {
       const desde = new Date(this.fechaDesde);
       const hasta = new Date(this.fechaHasta);
+
       if (desde > hasta) {
-        this.mensaje = 'La fecha "Desde" no puede ser mayor que "Hasta"';
-        this.error = true;
+        this.mostrarAlerta('La fecha "Desde" no puede ser mayor que "Hasta"', true);
         return;
       }
     }
@@ -125,18 +130,26 @@ export class Reports implements OnInit {
     const idSeleccionado = this.selectedMedicine.id;
 
     this.salesService.sales$.pipe(take(1)).subscribe(allSales => {
+
       this.filteredSales = allSales.filter(s => {
         const coincideMed = s.medicineId === idSeleccionado;
         const fechaVenta = new Date(s.date);
+
         const coincideFecha =
           (!desde || fechaVenta >= desde) &&
           (!hasta || fechaVenta <= hasta);
+
         return coincideMed && coincideFecha;
       });
 
       this.reporteGenerado = true;
-      this.mensaje = 'Reporte generado';
-      this.error = false;
+
+      if (this.filteredSales.length === 0) {
+        this.mostrarAlerta('No se encontraron datos', true);
+      } else {
+        this.mostrarAlerta('Reporte generado');
+      }
+
     });
   }
 

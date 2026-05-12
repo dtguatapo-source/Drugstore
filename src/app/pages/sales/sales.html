@@ -124,5 +124,11 @@
     </div>
   </div>
 
-  <div *ngIf="mensaje" class="alerta" [class.ok]="!error">{{ mensaje }}</div>
+@if (mensaje) {
+<div class="overlay">
+  <div class="alert-box" [class.error]="error" [class.ok]="!error">
+    <p>{{ mensaje }}</p>
+    <button (click)="cerrarAlerta()">OK</button>
+  </div>
 </div>
+}</div>

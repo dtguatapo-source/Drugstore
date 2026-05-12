@@ -39,6 +39,10 @@
         <label>PRECIO VENTA</label>
         <input type="number" [(ngModel)]="newMedicine.salePrice">
       </div>
+      <div class="botones-inline">
+      <button class="btn btn-reg" (click)="registrar()">Registrar</button>
+      <button class="btn btn-clear" (click)="limpiar()">Limpiar</button>
+    </div>
     </div>
   </section>
 
@@ -76,16 +80,20 @@
       <p *ngIf="listaMeds.length === 0" class="vacio">No se encontraron resultados</p>
     </div>
   </section>
+ 
 
   <div class="botones-abajo">
     <button class="btn btn-mod" (click)="actualizar()">Modificar</button>
     <button class="btn btn-del" (click)="borrar()">Eliminar</button>
-    <button class="btn btn-reg" (click)="registrar()">Registrar</button>
-    <button class="btn btn-clear" (click)="limpiar()">Limpiar</button>
     <button class="btn btn-exit" (click)="irAlMenu()">Salir</button>
   </div>
 
-  <div *ngIf="mensaje" class="alerta" [class.ok]="!error">
-    {{ mensaje }}
+  @if (mensaje) {
+  <div class="overlay">
+    <div class="alert-box" [class.error]="error" [class.ok]="!error">
+      <p>{{ mensaje }}</p>
+      <button (click)="cerrarAlerta()">OK</button>
+    </div>
   </div>
+}
 </div>
