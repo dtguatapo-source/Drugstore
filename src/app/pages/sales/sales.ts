@@ -53,56 +53,40 @@ export class Sales {
     });
   }
 
-  // =========================
   // BUSCADOR
-  // =========================
+  //aqui se agrega codigo porque no nos salia el stock actualizado si se seleccionaba
   onSearch() {
-
     if (this.searchText.length > 1) {
-
       this.filteredMedicines = this.medicines
         .map(m => {
-
           const enCarrito = this.cart
             .filter(item => item.id === m.id)
             .reduce((acc, item) => acc + item.cantVenta, 0);
 
+          // objeto con la resta hecha
           return {
             ...m,
             stockDisponible: m.stock - enCarrito
           };
-
         })
         .filter(m =>
-          (
-            m.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-            m.laboratory.toLowerCase().includes(this.searchText.toLowerCase())
-          )
-          &&
-          m.stockDisponible > 0
+          (m.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+            m.laboratory.toLowerCase().includes(this.searchText.toLowerCase()))
+          && m.stockDisponible > 0 
         );
-
     } else {
-
       this.filteredMedicines = [];
     }
   }
 
-  // =========================
-  // SELECCIONAR MEDICAMENTO
-  // =========================
+  // seleccionar MEDICAMENTO
   selectMed(med: any) {
-
     this.selectedMedicine = med;
-
     this.searchText = med.name;
-
     this.filteredMedicines = [];
   }
 
-  // =========================
-  // AGREGAR AL CARRITO
-  // =========================
+  // al carro
   addToCart() {
 
     if (!this.selectedMedicine) {
@@ -146,9 +130,8 @@ export class Sales {
     this.newSaleItem.quantity = 1;
   }
 
-  // =========================
-  // TOTAL DEL CARRITO
-  // =========================
+  // total del carro
+  
   get totalCart() {
 
     return this.cart.reduce(
@@ -157,9 +140,7 @@ export class Sales {
     );
   }
 
-  // =========================
-  // ELIMINAR DEL CARRITO
-  // =========================
+  // eliminar carro 
   removeFromCart(index: number) {
 
     this.cart.splice(index, 1);
@@ -167,9 +148,7 @@ export class Sales {
     this.mostrarAlerta('Producto eliminado', false);
   }
 
-  // =========================
-  // COMPLETAR VENTA
-  // =========================
+  // completa venta
   completeSale() {
 
     if (this.cart.length === 0) {
@@ -236,9 +215,8 @@ export class Sales {
     );
   }
 
-  // =========================
-  // ALERTAS
-  // =========================
+  // alerta
+
   mostrarAlerta(msg: string, esError: boolean) {
 
     this.mensaje = msg;

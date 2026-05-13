@@ -5,7 +5,7 @@
   </div>
 
   <div class="top-grid">
-    
+
     <div class="card panel-cliente">
       <div class="cliente-header">
         <img src="iconos/usu.png" class="user-icon">
@@ -36,8 +36,8 @@
       </div>
 
       <div class="search-box">
-        <input type="text" class="input-search" placeholder="Escriba el nombre, laboratorio o ID del producto..." 
-               [(ngModel)]="searchText" (input)="onSearch()">
+        <input type="text" class="input-search" placeholder="Escriba el nombre, laboratorio o ID del producto..."
+          [(ngModel)]="searchText" (input)="onSearch()">
 
         <div class="search-results" *ngIf="filteredMedicines.length > 0">
           <div class="result-item" *ngFor="let m of filteredMedicines" (click)="selectMed(m)">
@@ -45,7 +45,7 @@
               <span class="med-name">{{m.name}}</span>
               <span class="med-lab">{{m.laboratory}}</span>
             </div>
-            <span class="med-stock">Stock: {{m.stock}}</span>
+            <span class="med-stock">Stock: {{m.stockDisponible}}</span>
           </div>
         </div>
       </div>
@@ -61,15 +61,17 @@
         </div>
         <div class="field">
           <label>Stock Disp.</label>
-          <input type="text" readonly [value]="selectedMedicine?.stock || 0" class="input-readonly">
+          <input type="text" readonly [value]="selectedMedicine?.stockDisponible ?? selectedMedicine?.stock ?? 0"
+            class="input-readonly">
         </div>
       </div>
 
       <button class="btn-add-cart" (click)="addToCart()">+ AGREGAR A LA VENTA</button>
     </div>
 
-  </div> <div class="bottom-grid">
-    
+  </div>
+  <div class="bottom-grid">
+
     <div class="card panel-tabla">
       <p class="section-title">Productos en la Venta Actual</p>
       <div class="table-wrapper">
@@ -104,7 +106,7 @@
 
     <div class="card panel-total">
       <p class="section-title">Finalizar Venta</p>
-      
+
       <div class="payment-row">
         <span>Total a Pagar:</span>
         <span class="amount">${{totalCart | number}}</span>
@@ -124,11 +126,12 @@
     </div>
   </div>
 
-@if (mensaje) {
-<div class="overlay">
-  <div class="alert-box" [class.error]="error" [class.ok]="!error">
-    <p>{{ mensaje }}</p>
-    <button (click)="cerrarAlerta()">OK</button>
+  @if (mensaje) {
+  <div class="overlay">
+    <div class="alert-box" [class.error]="error" [class.ok]="!error">
+      <p>{{ mensaje }}</p>
+      <button (click)="cerrarAlerta()">OK</button>
+    </div>
   </div>
+  }
 </div>
-}</div>
