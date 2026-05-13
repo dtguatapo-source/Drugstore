@@ -34,7 +34,8 @@
         <p class="section-title">Buscador de Productos</p>
         <span class="subtotal-mini">Subtotal: ${{totalCart | number}}</span>
       </div>
-
+ <!-- Profe, lo comente asi para acordarme que esa fue la
+   logica que arregle hoy para que el stock fuera dinamico" -->
       <div class="search-box">
         <input type="text" class="input-search" placeholder="Escriba el nombre, laboratorio o ID del producto..."
           [(ngModel)]="searchText" (input)="onSearch()">

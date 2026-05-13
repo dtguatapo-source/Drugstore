@@ -54,7 +54,10 @@ export class Sales {
   }
 
   // BUSCADOR
-  //aqui se agrega codigo porque no nos salia el stock actualizado si se seleccionaba
+  /*-- Profe, lo comente asi para acordarme que esa fue la
+   lógica que arregle hoy para que el stock fuera dinamico" */
+
+   
   onSearch() {
     if (this.searchText.length > 1) {
       this.filteredMedicines = this.medicines
