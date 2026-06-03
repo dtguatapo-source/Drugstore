@@ -133,7 +133,6 @@ export class Inventory {
     this.router.navigate(['/dashboard']);
   }
 
-  // funcion para mostrar alertas bonitas en el centro
   mostrarAlerta(msg: string, esError: boolean) {
     this.mensaje = msg;
     this.error = esError;

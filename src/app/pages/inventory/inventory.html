@@ -40,9 +40,9 @@
         <input type="number" [(ngModel)]="newMedicine.salePrice">
       </div>
       <div class="botones-inline">
-      <button class="btn btn-reg" (click)="registrar()">Registrar</button>
-      <button class="btn btn-clear" (click)="limpiar()">Limpiar</button>
-    </div>
+        <button class="btn btn-reg" (click)="registrar()">Registrar</button>
+        <button class="btn btn-clear" (click)="limpiar()">Limpiar</button>
+      </div>
     </div>
   </section>
 
@@ -55,6 +55,7 @@
             <th>ID</th>
             <th>MEDICAMENTO</th>
             <th>LAB</th>
+            <th>DESCRIPCIÓN</th> 
             <th>STOCK</th>
             <th>P. COMPRA</th>
             <th>P. VENTA</th>
@@ -66,6 +67,7 @@
             <td>{{ m.id }}</td>
             <td>{{ m.name }}</td>
             <td>{{ m.laboratory }}</td>
+            <td>{{ m.description }}</td> 
             <td>{{ m.stock }}</td>
             <td>{{ m.purchasePrice }}</td>
             <td>{{ m.salePrice }}</td>
@@ -80,8 +82,7 @@
       <p *ngIf="listaMeds.length === 0" class="vacio">No se encontraron resultados</p>
     </div>
   </section>
- 
-
+   
   <div class="botones-abajo">
     <button class="btn btn-mod" (click)="actualizar()">Modificar</button>
     <button class="btn btn-del" (click)="borrar()">Eliminar</button>
@@ -95,5 +96,5 @@
       <button (click)="cerrarAlerta()">OK</button>
     </div>
   </div>
-}
+  }
 </div>
