@@ -4,6 +4,21 @@
     min-height: 100vh;
     font-family: 'Segoe UI', sans-serif;
 }
+/* Fuerza a que el título principal tenga el color azul grisáceo y tamaño de Compras */
+.inventory-container h2, 
+.inventory-container .main-title {
+    color: #2c3e50 !important;
+    font-size: 24px !important;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.titulo-gris {
+    color: #7f8c8d; /* Igual a Compras */
+    font-size: 12px; /* Igual a Compras */
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
 
 .header-seccion {
     display: flex;

@@ -10,6 +10,30 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* ==========================================================================
+   TITULOS UNIFICADOS (BASE COMPRAS)
+   ========================================================================== */
+.main-title {
+    color: #2c3e50 !important; /* Azul grisáceo elegante de Compras */
+    font-size: 24px !important;  /* Tamaño exacto de Compras */
+    font-weight: 800;
+}
+
+.section-title {
+    font-size: 12px !important;
+    font-weight: 800;
+    color: #7f8c8d !important; /* Gris unificado de Compras */
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    border-bottom: 1px solid #eee; /* Línea inferior sutil de Compras */
+    padding-bottom: 5px;
+}
+
+/* ==========================================================================
+   ESTRUCTURA Y TARJETAS
+   ========================================================================== */
 .header-main {
     display: flex;
     justify-content: space-between;
@@ -38,15 +62,9 @@
     border: 1px solid #edf2f7;
 }
 
-.section-title {
-    font-size: 12px;
-    font-weight: 800;
-    color: #1a237e;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
+/* ==========================================================================
+   CAMPOS DE FORMULARIO
+   ========================================================================== */
 .field {
     display: flex;
     flex-direction: column;
@@ -92,6 +110,7 @@ input[readonly] {
 
 .search-box {
     margin-bottom: 20px;
+    position: relative;
 }
 
 .grid-inputs-mini {
@@ -101,30 +120,9 @@ input[readonly] {
     margin-bottom: 5px;
 }
 
-.btn-add-cart {
-    background: #1a237e;
-    color: white;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    width: 100%;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.btn-complete {
-    background: #0d124a;
-    color: white;
-    padding: 18px;
-    border-radius: 8px;
-    width: 100%;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
+/* ==========================================================================
+   TABLAS Y ELEMENTOS INTERNOS
+   ========================================================================== */
 .table-wrapper {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -144,69 +142,43 @@ input[readonly] {
     font-size: 12px;
 }
 
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    font-weight: 700;
-    font-size: 18px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #f1f5f9;
+.table-cart td {
+    padding: 14px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 14px;
 }
 
-.total-big {
-    text-align: right;
-    margin: 30px 0;
+.table-cart tbody tr:hover {
+    background-color: #f8fafc;
 }
 
-.total-big h1 {
-    font-size: 35px;
+.td-name {
+    font-weight: 600;
     color: #1a237e;
-    font-weight: 900;
 }
 
-.alerta {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #e74c3c;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 25px;
-    font-weight: 500;
+.td-id {
+    color: #64748b;
+    font-size: 13px;
 }
 
-.alerta.ok {
-    background: #2ecc71;
+.td-total {
+    font-weight: bold;
+    color: #0f172a;
 }
 
-.cliente-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-icon {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background: #eef2ff;
-    padding: 5px;
-}
-
-.search-box {
-    position: relative; /* Importante para que la lista se pegue aquí */
-}
-
+/* ==========================================================================
+   BUSCADOR DE PRODUCTOS (DESPLEGABLE)
+   ========================================================================== */
 .search-results {
     position: absolute;
-    top: 100%; /* Sale justo debajo del input */
+    top: 100%;
     left: 0;
     width: 100%;
     background: white;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    z-index: 1000; /* Para que pase por encima de la tabla */
+    z-index: 1000;
     max-height: 250px;
     overflow-y: auto;
     border: 1px solid #e2e8f0;
@@ -246,34 +218,33 @@ input[readonly] {
     color: #475569;
 }
 
-
-/* TABLA */
-.table-cart td {
+/* ==========================================================================
+   BOTONES Y ACCIONES
+   ========================================================================== */
+.btn-add-cart {
+    background: #1a237e;
+    color: white;
     padding: 14px;
-    border-bottom: 1px solid #edf2f7;
-    font-size: 14px;
-}
-
-.table-cart tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-.td-name {
-    font-weight: 600;
-    color: #1a237e;
-}
-
-.td-id {
-    color: #64748b;
-    font-size: 13px;
-}
-
-.td-total {
+    border: none;
+    border-radius: 8px;
+    width: 100%;
     font-weight: bold;
-    color: #0f172a;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-/* BOTON ELIMINAR */
+.btn-complete {
+    background: #0d124a;
+    color: white;
+    padding: 18px;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
 .btn-del {
     border: none;
     background: #fee2e2;
@@ -289,7 +260,6 @@ input[readonly] {
     background: #fecaca;
 }
 
-/* BOTONES */
 .btn-add-cart:hover,
 .btn-complete:hover {
     opacity: 0.95;
@@ -297,51 +267,28 @@ input[readonly] {
     transition: 0.2s;
 }
 
-/* TITULO PRINCIPAL */
-.main-title {
-    color: #1a237e;
-    font-size: 28px;
-    font-weight: 800;
-}
-
-/* BADGE ADMIN */
-.user-badge {
-    background: #1a237e;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* HEADER BUSCADOR */
-.search-header {
+/* ==========================================================================
+   TOTALES Y METRICAS
+   ========================================================================== */
+.total-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.subtotal-mini {
-    background: #eef2ff;
-    color: #1a237e;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 13px;
     font-weight: 700;
-}
-
-/* TOTAL */
-.payment-row {
-    display: flex;
-    justify-content: space-between;
+    font-size: 18px;
     margin-bottom: 20px;
-    font-size: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-.amount {
-    font-weight: bold;
+.total-big {
+    text-align: right;
+    margin: 30px 0;
+}
+
+.total-big h1 {
+    font-size: 35px;
     color: #1a237e;
+    font-weight: 900;
 }
 
 .total-big-container {
@@ -365,7 +312,75 @@ input[readonly] {
     font-weight: 900;
 }
 
-/* INPUTS */
+.subtotal-mini {
+    background: #eef2ff;
+    color: #1a237e;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+
+.amount {
+    font-weight: bold;
+    color: #1a237e;
+}
+
+/* ==========================================================================
+   COMPONENTES VARIOS (BADGES, ALERTAS)
+   ========================================================================== */
+.user-badge {
+    background: #1a237e;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cliente-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #eef2ff;
+    padding: 5px;
+}
+
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.alerta {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #e74c3c;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    font-weight: 500;
+}
+
+.alerta.ok {
+    background: #2ecc71;
+}
+
 .input-search {
     font-size: 15px;
 }
@@ -378,20 +393,17 @@ input[readonly] {
     background: #eef2f7 !important;
 }
 
-/* ALERTAS CENTRADAS */
+/* MODAL / ALERT-BOX */
 .overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-
     background: rgba(0,0,0,0.4);
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     z-index: 9999;
 }
 
@@ -401,9 +413,7 @@ input[readonly] {
     border-radius: 15px;
     text-align: center;
     min-width: 320px;
-
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-
     animation: aparecer 0.3s ease;
 }
 
@@ -436,26 +446,15 @@ input[readonly] {
     opacity: 0.9;
 }
 
-/* ANIMACION */
 @keyframes aparecer {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
-/* =========================
+/* ==========================================================================
    RESPONSIVE CELULAR
-========================= */
-
+   ========================================================================== */
 @media (max-width: 768px) {
-
-    /* CONTENEDORES PRINCIPALES */
     .container,
     .top-grid,
     .bottom-grid,
@@ -471,10 +470,7 @@ input[readonly] {
         gap: 15px;
     }
 
-    /* LOGIN */
-    .left {
-        display: none;
-    }
+    .left { display: none; }
 
     .right {
         width: 100%;
@@ -487,11 +483,8 @@ input[readonly] {
         max-width: 100%;
     }
 
-    .login-box h2 {
-        font-size: 28px;
-    }
+    .login-box h2 { font-size: 28px; }
 
-    /* TARJETAS */
     .card,
     .report-card-box,
     .filters-container {
@@ -499,7 +492,6 @@ input[readonly] {
         padding: 20px !important;
     }
 
-    /* INPUTS */
     input,
     .form-select,
     button {
@@ -507,7 +499,6 @@ input[readonly] {
         width: 100%;
     }
 
-    /* TABLAS */
     .table-wrapper,
     .table-container {
         overflow-x: auto;
@@ -519,7 +510,6 @@ input[readonly] {
         min-width: 700px;
     }
 
-    /* TITULOS */
     .main-title,
     h1,
     h2 {
@@ -527,22 +517,10 @@ input[readonly] {
         text-align: center;
     }
 
-    /* GRID PRODUCTOS */
-    .grid-inputs-mini {
-        grid-template-columns: 1fr !important;
-    }
+    .grid-inputs-mini { grid-template-columns: 1fr !important; }
+    .filter-grid { grid-template-columns: 1fr !important; }
+    .field { min-width: 100%; }
 
-    /* FILTROS */
-    .filter-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* CAMPOS */
-    .field {
-        min-width: 100%;
-    }
-
-    /* BOTONES */
     .btn-save,
     .btn-exit,
     .btn-complete,
@@ -552,27 +530,9 @@ input[readonly] {
         width: 100%;
     }
 
-    /* HEADER */
     .reports-header,
-    .header-main {
-        align-items: flex-start;
-    }
-
-    /* BADGES */
-    .user-badge {
-        width: 100%;
-        text-align: center;
-    }
-
-    /* TOTALES */
-    .total-big-container h1 {
-        font-size: 28px;
-    }
-
-    /* ALERTAS */
-    .alert-box {
-        width: 90%;
-        min-width: unset;
-    }
-
+    .header-main { align-items: flex-start; }
+    .user-badge { width: 100%; text-align: center; }
+    .total-big-container h1 { font-size: 28px; }
+    .alert-box { width: 90%; min-width: unset; }
 }

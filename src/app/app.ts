@@ -33,4 +33,15 @@ export class App {
       url.startsWith(ruta)
     );
   }
+  salir() {
+   
+
+    // eliminar sesion
+    localStorage.removeItem('login');
+
+    this.router.navigate(['/login']); 
+  }
+  
+
+
 }
