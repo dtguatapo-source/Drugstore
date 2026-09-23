@@ -1,8 +1,9 @@
-@if (mostrarLayout) {
+<!-- MIGRACIÓN ANGULAR 21: Lectura de la signal mostrarLayout() con paréntesis -->
+@if (mostrarLayout()) {
   <header class="main-header">
     <nav class="navbar">
       
-      <div class="logo-container" routerLink="/inicio">
+      <div class="logo-container" routerLink="/dashboard">
         <div class="logo-circulo">
           <img src="iconos/flor.png" alt="logo">
         </div>
@@ -28,4 +29,3 @@
 <main class="content">
   <router-outlet></router-outlet>
 </main>
-

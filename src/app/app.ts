@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
@@ -13,14 +13,19 @@ export class App {
 
   protected readonly title = signal('drugstore-system');
 
-  mostrarLayout = false;
+  // MIGRACIÓN ANGULAR 21: Inyección móderna mediante inject() en lugar del constructor
+  private readonly router = inject(Router);
 
-  rutasSinMenu = ['/login', '/dashboard', '/register'];
+  // MIGRACIÓN ANGULAR 21: Manejo del estado del layout mediante una Signal reactiva
+  readonly mostrarLayout = signal<boolean>(false);
 
-  constructor(private router: Router) {
+  private readonly rutasSinMenu = ['/login', '/dashboard', '/register'];
 
+  constructor() {
+    // Validar ruta inicial
     this.validarRuta(this.router.url);
 
+    // Escuchar eventos de navegación
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -28,20 +33,15 @@ export class App {
     });
   }
 
-  validarRuta(url: string) {
-    this.mostrarLayout = !this.rutasSinMenu.some(ruta =>
-      url.startsWith(ruta)
-    );
+  validarRuta(url: string): void {
+    const esRutaSinMenu = this.rutasSinMenu.some(ruta => url.startsWith(ruta));
+    // MIGRACIÓN ANGULAR 21: Actualización de la signal usando .set()
+    this.mostrarLayout.set(!esRutaSinMenu);
   }
-  salir() {
-   
 
-    // eliminar sesion
+  salir(): void {
+    // Eliminar sesión
     localStorage.removeItem('login');
-
-    this.router.navigate(['/login']); 
+    this.router.navigate(['/login']);
   }
-  
-
-
 }
