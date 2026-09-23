@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // Importante para capturar lo que escribes
-import { CommonModule } from '@angular/common'; 
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms'; 
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  // MIGRACIÓN ANGULAR 21: Se elimina CommonModule ya que no es necesario con el nuevo control flow
+  imports: [FormsModule], 
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -15,21 +15,24 @@ export class Register {
   nuevaPass: string = '';
   confirmarPass: string = '';
 
-  error: boolean = false;
-  mensaje: string = '';
+  // MIGRACIÓN ANGULAR 21: Inyección moderna de dependencias usando inject() en lugar del constructor
+  private readonly router = inject(Router);
 
-  constructor(private router: Router) {}
+  // MIGRACIÓN ANGULAR 21: Gestión de estado reactivo mediante Signals en reemplazo de variables tradicionales
+  readonly error = signal<boolean>(false);
+  readonly mensaje = signal<string>('');
 
-  registrar() {
+  registrar(): void {
     if (!this.nuevoUsuario.trim() || !this.nuevaPass.trim() || !this.confirmarPass.trim()) {
-      this.mensaje = 'Por favor completa todos los campos';
-      this.error = true;
+      // MIGRACIÓN ANGULAR 21: Actualización del estado usando .set() en la signal
+      this.mensaje.set('Por favor completa todos los campos');
+      this.error.set(true);
       return;
     }
 
     if (this.nuevaPass !== this.confirmarPass) {
-      this.mensaje = 'Las contraseñas no coinciden';
-      this.error = true;
+      this.mensaje.set('Las contraseñas no coinciden');
+      this.error.set(true);
       return;
     }
 
@@ -38,8 +41,8 @@ export class Register {
 
     const existe = usuarios.find((u: any) => u.username === this.nuevoUsuario);
     if (existe) {
-      this.mensaje = 'Este usuario ya está registrado';
-      this.error = true;
+      this.mensaje.set('Este usuario ya está registrado');
+      this.error.set(true);
       return;
     }
 
@@ -54,7 +57,7 @@ export class Register {
     this.router.navigate(['/login']);
   }
 
-  volverAlLogin() {
+  volverAlLogin(): void {
     this.router.navigate(['/login']);
   }
 }

@@ -1,33 +1,31 @@
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { Component, inject, signal, ViewEncapsulation } from '@angular/core';
 import { MedicineService } from '../../services/medicine.service';
 import { Medicine } from '../../models/medicine';
 import { PurchaseService } from '../../services/purchase.service';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-purchases',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  // MIGRACIÓN ANGULAR 21: Se remueve CommonModule ya que el nuevo control flow (@for, @if) no lo requiere
+  imports: [FormsModule],
   templateUrl: './purchases.html',
   styleUrl: './purchases.css',
   encapsulation: ViewEncapsulation.None
 })
 export class Purchases {
+  // MIGRACIÓN ANGULAR 21: Inyección de dependencias moderna mediante inject() en lugar de constructor
+  private readonly medService = inject(MedicineService);
+  private readonly purchaseService = inject(PurchaseService);
+  private readonly router = inject(Router);
 
-  mensaje: string = '';
-  error: boolean = false;
-
-  private timeoutRef: any;
-
-  private medService = inject(MedicineService);
-  private purchaseService = inject(PurchaseService);
-  private router = inject(Router);
-
-  tablaTemporal: any[] = [];
-  listaMedicamentos: Medicine[] = [];
-  medEncontrado?: Medicine;
+  // MIGRACIÓN ANGULAR 21: Manejo de estado reactivo usando Signals para reemplazar variables simples
+  readonly mensaje = signal<string>('');
+  readonly error = signal<boolean>(false);
+  readonly tablaTemporal = signal<any[]>([]);
+  readonly listaMedicamentos = signal<Medicine[]>([]);
+  readonly medEncontrado = signal<Medicine | undefined>(undefined);
 
   newPurchase: any = {
     date: '',
@@ -39,23 +37,27 @@ export class Purchases {
     salePrice: 0
   };
 
+  private timeoutRef: any;
+
   constructor() {
     this.medService.medicines$.subscribe(data => {
-      this.listaMedicamentos = data;
+      // MIGRACIÓN ANGULAR 21: Asignación de datos a la signal con .set()
+      this.listaMedicamentos.set(data);
     });
   }
 
-  buscarMed() {
-    this.medEncontrado = this.listaMedicamentos.find(m => m.id === this.newPurchase.medicineId);
+  buscarMed(): void {
+    // MIGRACIÓN ANGULAR 21: Lectura de la signal listaMedicamentos()
+    const med = this.listaMedicamentos().find(m => m.id === this.newPurchase.medicineId);
+    this.medEncontrado.set(med);
 
-    if (this.medEncontrado) {
-      this.newPurchase.purchasePrice = this.medEncontrado.purchasePrice;
-      this.newPurchase.salePrice = this.medEncontrado.salePrice;
+    if (med) {
+      this.newPurchase.purchasePrice = med.purchasePrice;
+      this.newPurchase.salePrice = med.salePrice;
     }
   }
 
-  meterALista() {
-
+  meterALista(): void {
     const p = this.newPurchase;
 
     if (!p.provider && !p.invoiceNumber && !p.date) {
@@ -88,18 +90,17 @@ export class Purchases {
       return;
     }
 
-    this.tablaTemporal.push({ ...p });
-
+    // MIGRACIÓN ANGULAR 21: Uso de .update() para agregar un elemento a la lista reactiva
+    this.tablaTemporal.update(prev => [...prev, { ...p }]);
     this.mostrarAlerta('Producto agregado', false);
 
     this.newPurchase.medicineId = '';
     this.newPurchase.quantity = 0;
-    this.medEncontrado = undefined;
+    this.medEncontrado.set(undefined);
   }
 
-  guardarCompra() {
-
-    if (this.tablaTemporal.length === 0) {
+  guardarCompra(): void {
+    if (this.tablaTemporal().length === 0) {
       this.mostrarAlerta('No hay productos en la lista', true);
       return;
     }
@@ -109,8 +110,8 @@ export class Purchases {
       return;
     }
 
-    this.tablaTemporal.forEach(item => {
-      let m = this.listaMedicamentos.find(aux => aux.id === item.medicineId);
+    this.tablaTemporal().forEach(item => {
+      let m = this.listaMedicamentos().find(aux => aux.id === item.medicineId);
 
       if (m) {
         m.stock = m.stock + item.quantity;
@@ -141,30 +142,29 @@ export class Purchases {
     };
 
     this.mostrarAlerta('Compra registrada correctamente', false);
-
-    this.tablaTemporal = [];
+    this.tablaTemporal.set([]);
   }
 
-  mostrarAlerta(msg: string, esError: boolean) {
-    this.mensaje = msg;
-    this.error = esError;
+  mostrarAlerta(msg: string, esError: boolean): void {
+    this.mensaje.set(msg);
+    this.error.set(esError);
 
     clearTimeout(this.timeoutRef);
 
     this.timeoutRef = setTimeout(() => {
-      this.mensaje = '';
+      this.mensaje.set('');
     }, 2000);
   }
 
-  cerrarAlerta() {
-    this.mensaje = '';
+  cerrarAlerta(): void {
+    this.mensaje.set('');
   }
 
-  obtenerNombre(id: string) { return this.listaMedicamentos.find(m => m.id === id)?.name || '---'; }
-  obtenerLab(id: string) { return this.listaMedicamentos.find(m => m.id === id)?.laboratory || '---'; }
-  obtenerDesc(id: string) { return this.listaMedicamentos.find(m => m.id === id)?.description || '---'; }
+  obtenerNombre(id: string): string { return this.listaMedicamentos().find(m => m.id === id)?.name || '---'; }
+  obtenerLab(id: string): string { return this.listaMedicamentos().find(m => m.id === id)?.laboratory || '---'; }
+  obtenerDesc(id: string): string { return this.listaMedicamentos().find(m => m.id === id)?.description || '---'; }
 
-  regresar() {
+  regresar(): void {
     this.router.navigate(['/dashboard']);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Medicine } from '../models/medicine';
 
 @Injectable({
@@ -6,19 +6,22 @@ import { Medicine } from '../models/medicine';
 })
 export class AiService {
 
-  private apiKey = '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';
-  private apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+  private readonly apiKey = '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';
+  private readonly apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+
+  // Los servicios @Injectable con providedIn: 'root' se mantienen vigentes.
+  // Se añade async/await con fetch para peticiones asíncronas directas.
 
   async recomendarMedicamento(sintomas: string, inventario: Medicine[]): Promise<string> {
     try {
-      // filtrar medicmaentos de stock activo
+      // Filtrar medicamentos de stock activo
       const disponibles = (inventario || []).filter(m => m && m.stock > 0);
 
       if (disponibles.length === 0) {
         return "No hay stock disponible en este momento.";
       }
 
-      //  Extraemos solo lo necesario y recortamos descripciones
+      // Extraemos solo lo necesario y recortamos descripciones
       // Esto evita enviar miles de caracteres innecesarios y previene el Error 429
       const inventarioComprimido = disponibles.map(m => ({
         nombre: m.name,
@@ -26,7 +29,7 @@ export class AiService {
         stock: m.stock
       }));
 
-      //   el prompt enviando el JSON ultra ligero
+      // El prompt enviando el JSON ultra ligero
       const prompt = `
         Sintomas del cliente: "${sintomas}".
         Inventario disponible: ${JSON.stringify(inventarioComprimido)}
@@ -36,7 +39,7 @@ export class AiService {
         Si nada de la lista sirve para ese malestar o dolor especifico, responde exactamente: "No hay stock para ese malestar.".
       `;
 
-      // HTTP a Groq
+      // Llamada HTTP a la API de Groq
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
@@ -48,8 +51,7 @@ export class AiService {
           messages: [
             { role: 'user', content: prompt }
           ],
-          temperature: 0.2 // para que sea mas estricto y lijero
-
+          temperature: 0.2
         })
       });
 

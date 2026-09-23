@@ -57,9 +57,12 @@
           Cancelar y Volver
         </button>
 
-        <div *ngIf="error" class="alerta">
-          {{ mensaje }}
-        </div>
+        <!-- MIGRACIÓN ANGULAR 21: Se reemplaza *ngIf por el nuevo bloque @if y la llamada a la Signal error() -->
+        @if (error()) {
+          <div class="alerta">
+            {{ mensaje() }}
+          </div>
+        }
 
       </form>
     </div>

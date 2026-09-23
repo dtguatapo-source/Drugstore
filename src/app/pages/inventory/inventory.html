@@ -63,23 +63,29 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let m of listaMeds" (click)="seleccionar(m)" style="cursor: pointer;">
-            <td>{{ m.id }}</td>
-            <td>{{ m.name }}</td>
-            <td>{{ m.laboratory }}</td>
-            <td>{{ m.description }}</td> 
-            <td>{{ m.stock }}</td>
-            <td>{{ m.purchasePrice }}</td>
-            <td>{{ m.salePrice }}</td>
-            <td>
-              <span class="etiqueta-estado" [attr.data-status]="m.status">
-                {{ m.status }}
-              </span>
-            </td>
-          </tr>
+          <!-- Uso de @for moderno de Angular 21 -->
+          @for (m of listaFiltrada(); track m.id) {
+            <tr (click)="seleccionar(m)" style="cursor: pointer;">
+              <td>{{ m.id }}</td>
+              <td>{{ m.name }}</td>
+              <td>{{ m.laboratory }}</td>
+              <td>{{ m.description }}</td> 
+              <td>{{ m.stock }}</td>
+              <td>{{ m.purchasePrice }}</td>
+              <td>{{ m.salePrice }}</td>
+              <td>
+                <span class="etiqueta-estado" [attr.data-status]="m.status">
+                  {{ m.status }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="vacio">No se encontraron resultados</td>
+            </tr>
+          }
         </tbody>
       </table>
-      <p *ngIf="listaMeds.length === 0" class="vacio">No se encontraron resultados</p>
     </div>
   </section>
    
@@ -89,12 +95,13 @@
     <button class="btn btn-exit" (click)="irAlMenu()">Salir</button>
   </div>
 
-  @if (mensaje) {
-  <div class="overlay">
-    <div class="alert-box" [class.error]="error" [class.ok]="!error">
-      <p>{{ mensaje }}</p>
-      <button (click)="cerrarAlerta()">OK</button>
+  <!-- Control Flow @if moderno de Angular 21 -->
+  @if (mensaje()) {
+    <div class="overlay">
+      <div class="alert-box" [class.error]="error()" [class.ok]="!error()">
+        <p>{{ mensaje() }}</p>
+        <button (click)="cerrarAlerta()">OK</button>
+      </div>
     </div>
-  </div>
   }
 </div>

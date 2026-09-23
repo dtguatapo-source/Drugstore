@@ -1,50 +1,60 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { MedicineService } from '../../services/medicine.service';
 import { Medicine } from '../../models/medicine';
-import { NgFor, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [NgFor, FormsModule, CommonModule],
+  imports: [FormsModule],
   templateUrl: './inventory.html',
   styleUrl: './inventory.css' 
 })
 export class Inventory {
-  
-  mensaje: string = '';
-  error: boolean = false;
-  
-  private servicio = inject(MedicineService);
-  private router = inject(Router);
+  private readonly servicio = inject(MedicineService);
+  private readonly router = inject(Router);
 
-  // listas para mostrar y para filtrar
-  listaMeds: Medicine[] = [];
-  listaCompleta: Medicine[] = [];
+  // Estados reactivos usando Signals de Angular 21
+  readonly mensaje = signal<string>('');
+  readonly error = signal<boolean>(false);
+  readonly filtroTexto = signal<string>('');
+  readonly listaCompleta = signal<Medicine[]>([]);
+
+  // Estado derivado: se recalcula automáticamente cuando cambia listaCompleta o filtroTexto
+  readonly listaFiltrada = computed(() => {
+    const texto = this.filtroTexto().toLowerCase().trim();
+    const medicamentos = this.listaCompleta();
+
+    if (!texto) {
+      return medicamentos;
+    }
+
+    return medicamentos.filter(m => 
+      m.name.toLowerCase().includes(texto) || 
+      m.id.toLowerCase().includes(texto)
+    );
+  });
   
-  // datos del formulario
+  // Datos del formulario de nuevo medicamento
   newMedicine: Medicine = {
     id: '', name: '', laboratory: '', description: '',
     stock: 0, purchasePrice: 0, salePrice: 0
   };
 
-  // para controlar que no se pisen las alertas
   private timeoutRef: any;
 
   constructor() {
     this.servicio.medicines$.subscribe(datos => {
-      this.listaCompleta = datos;
-      this.listaMeds = datos;
+      this.listaCompleta.set(datos);
     });
   }
 
-  generarId() {
+  generarId(): string {
     return 'MED-' + Math.floor(Math.random() * 500);
   }
 
-  registrar() {
+  registrar(): void {
     const m = this.newMedicine;
 
     if (!m.name || !m.laboratory) {
@@ -57,7 +67,7 @@ export class Inventory {
       return;
     }
 
-    const existe = this.listaCompleta.some(x => 
+    const existe = this.listaCompleta().some(x => 
       x.name.toLowerCase().trim() === m.name.toLowerCase().trim()
     );
 
@@ -73,11 +83,11 @@ export class Inventory {
     this.limpiar();
   }
 
-  seleccionar(m: Medicine) {
+  seleccionar(m: Medicine): void {
     this.newMedicine = { ...m };
   }
 
-  actualizar() {
+  actualizar(): void {
     const m = this.newMedicine;
 
     if (!this.newMedicine.id) {
@@ -96,7 +106,7 @@ export class Inventory {
     this.limpiar();
   }
 
-  borrar() {
+  borrar(): void {
     if (!this.newMedicine.id) {
       this.mostrarAlerta('Selecciona algo para borrar', true);
       return;
@@ -109,42 +119,34 @@ export class Inventory {
     }
   }
 
-  buscar(event: any) {
-    const texto = event.target.value.toLowerCase().trim();
-
-    if (!texto) {
-      this.listaMeds = [...this.listaCompleta];
-    } else {
-      this.listaMeds = this.listaCompleta.filter(m => 
-        m.name.toLowerCase().includes(texto) || 
-        m.id.toLowerCase().includes(texto)
-      );
-    }
+  buscar(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.filtroTexto.set(input.value);
   }
 
-  limpiar() {
+  limpiar(): void {
     this.newMedicine = {
       id: '', name: '', laboratory: '', description: '',
       stock: 0, purchasePrice: 0, salePrice: 0
     };
   }
 
-  irAlMenu() {
+  irAlMenu(): void {
     this.router.navigate(['/dashboard']);
   }
 
-  mostrarAlerta(msg: string, esError: boolean) {
-    this.mensaje = msg;
-    this.error = esError;
+  mostrarAlerta(msg: string, esError: boolean): void {
+    this.mensaje.set(msg);
+    this.error.set(esError);
 
     clearTimeout(this.timeoutRef);
 
     this.timeoutRef = setTimeout(() => {
-      this.mensaje = '';
+      this.mensaje.set('');
     }, 2000);
   }
 
-  cerrarAlerta() {
-    this.mensaje = '';
+  cerrarAlerta(): void {
+    this.mensaje.set('');
   }
 }

@@ -27,18 +27,20 @@
         <label>SELECCIONAR</label>
         <select class="form-select" [(ngModel)]="newPurchase.medicineId" (change)="buscarMed()">
           <option value="">Seleccione un producto</option>
-          <option *ngFor="let med of listaMedicamentos" [value]="med.id">
-            {{ med.id }} - {{ med.name }}
-          </option>
+          @for (med of listaMedicamentos(); track med.id) {
+            <option [value]="med.id">
+              {{ med.id }} - {{ med.name }}
+            </option>
+          }
         </select>
       </div>
       <div class="field">
         <label>NOMBRE</label>
-        <input type="text" [value]="medEncontrado?.name || ''" readonly>
+        <input type="text" [value]="medEncontrado()?.name || ''" readonly>
       </div>
       <div class="field">
         <label>LABORATORIO</label>
-        <input type="text" [value]="medEncontrado?.laboratory || ''" readonly>
+        <input type="text" [value]="medEncontrado()?.laboratory || ''" readonly>
       </div>
     </div>
 
@@ -80,20 +82,23 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="tablaTemporal.length === 0">
-            <td colspan="7" style="text-align: center; padding: 20px;">
-              No hay productos en la lista
-            </td>
-          </tr>
-          <tr *ngFor="let item of tablaTemporal">
-            <td>{{ item.medicineId }}</td>
-            <td>{{ obtenerNombre(item.medicineId) }}</td>
-            <td>{{ obtenerLab(item.medicineId) }}</td>
-            <td>{{ obtenerDesc(item.medicineId) }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.purchasePrice }}</td>
-            <td>{{ item.salePrice }}</td>
-          </tr>
+          @for (item of tablaTemporal(); track $index) {
+            <tr>
+              <td>{{ item.medicineId }}</td>
+              <td>{{ obtenerNombre(item.medicineId) }}</td>
+              <td>{{ obtenerLab(item.medicineId) }}</td>
+              <td>{{ obtenerDesc(item.medicineId) }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.purchasePrice }}</td>
+              <td>{{ item.salePrice }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 20px;">
+                No hay productos en la lista
+              </td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -108,13 +113,12 @@
     </button>
   </div>
 
- @if (mensaje) {
-  <div class="overlay">
-    <div class="alert-box" [class.error]="error" [class.ok]="!error">
-      <p>{{ mensaje }}</p>
-      <button (click)="cerrarAlerta()">OK</button>
+  @if (mensaje()) {
+    <div class="overlay">
+      <div class="alert-box" [class.error]="error()" [class.ok]="!error()">
+        <p>{{ mensaje() }}</p>
+        <button (click)="cerrarAlerta()">OK</button>
+      </div>
     </div>
-  </div>
-}
-
+  }
 </div>

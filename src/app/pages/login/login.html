@@ -49,9 +49,13 @@
         <div class="register-link">
           <p>¿No tienes cuenta? <a (click)="irARegistro()">Regístrate aquí</a></p>
         </div>
-        <div *ngIf="error && intento" class="alerta">
-          {{ mensaje }}
-        </div>
+
+        <!-- Sintaxis moderna @if de Angular 21 -->
+        @if (error() && intento()) {
+          <div class="alerta">
+            {{ mensaje() }}
+          </div>
+        }
 
       </form>
     </div>

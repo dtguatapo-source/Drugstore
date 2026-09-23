@@ -1,12 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; 
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [FormsModule], 
   templateUrl: './login.html',
   styleUrl: './login.css' 
 })
@@ -15,21 +14,23 @@ export class Login {
   username: string = '';
   password: string = '';
 
-  error: boolean = false;
-  intento: boolean = false;
-  mensaje: string = '';
+  // Inyección moderna de dependencias según la guía
+  private readonly router = inject(Router);
 
-  constructor(private router: Router) {}
+  // Estados manejados con Signals de Angular 21
+  readonly error = signal<boolean>(false);
+  readonly intento = signal<boolean>(false);
+  readonly mensaje = signal<string>('');
 
-  login() {
-    this.intento = true;
+  login(): void {
+    this.intento.set(true);
     const user = this.username.trim();
     const pass = this.password.trim();
 
     // Validaciones básicas
     if (!user || !pass) {
-      this.mensaje = 'Complete todos los campos';
-      this.error = true;
+      this.mensaje.set('Complete todos los campos');
+      this.error.set(true);
       return;
     }
 
@@ -40,7 +41,6 @@ export class Login {
     }
 
     // --- PASO 2: Buscar en los usuarios registrados (LocalStorage) ---
-    // Obtenemos la lista que guardamos en el modulo de registro
     const datosLocal = localStorage.getItem('usuarios_sistema');
     const usuariosRegistrados = datosLocal ? JSON.parse(datosLocal) : [];
 
@@ -51,21 +51,19 @@ export class Login {
       this.entrarAlSistema();
     } else {
       // Si no es admin y no está en la lista...
-      this.mensaje = 'Usuario o contraseña incorrectos';
-      this.error = true;
+      this.mensaje.set('Usuario o contraseña incorrectos');
+      this.error.set(true);
     }
   }
 
-  // Función para no repetir código
-  entrarAlSistema() {
-    this.error = false;
-    this.mensaje = '';
+  entrarAlSistema(): void {
+    this.error.set(false);
+    this.mensaje.set('');
     localStorage.setItem('login', 'true'); // Guardamos la sesión
     this.router.navigate(['/dashboard']);
   }
 
-  // Función para que el link del HTML nos mande al registro
-  irARegistro() {
+  irARegistro(): void {
     this.router.navigate(['/register']);
   }
 }
