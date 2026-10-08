@@ -1,23 +1,25 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http'; // 👈 1. Importamos HttpClient
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule], 
+  imports: [FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css' 
+  styleUrl: './login.css'
 })
 export class Login {
 
   username: string = '';
   password: string = '';
 
-  // Inyección moderna de dependencias según la guía
+  // Inyección de dependencias
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient); // 👈 2. Inyectamos el servicio HTTP
 
-  // Estados manejados con Signals de Angular 21
+  // Estados manejados con Signals
   readonly error = signal<boolean>(false);
   readonly intento = signal<boolean>(false);
   readonly mensaje = signal<string>('');
@@ -34,32 +36,40 @@ export class Login {
       return;
     }
 
-    // --- PASO 1: Revisar si es el Administrador predeterminado ---
-    if (user === 'admin' && pass === '1234') {
-      this.entrarAlSistema();
-      return;
-    }
-
-    // --- PASO 2: Buscar en los usuarios registrados (LocalStorage) ---
-    const datosLocal = localStorage.getItem('usuarios_sistema');
-    const usuariosRegistrados = datosLocal ? JSON.parse(datosLocal) : [];
-
-    // Buscamos si existe alguien con ese nombre y esa clave
-    const usuarioValido = usuariosRegistrados.find((u: any) => u.username === user && u.password === pass);
-
-    if (usuarioValido) {
-      this.entrarAlSistema();
-    } else {
-      // Si no es admin y no está en la lista...
-      this.mensaje.set('Usuario o contraseña incorrectos');
-      this.error.set(true);
-    }
+    // 👈 3. Petición POST directa al Backend (puerto 3000)
+    this.http.post<any>('http://localhost:3000/auth/login', {
+      username: user,
+      password: pass
+    }).subscribe({
+      next: (res) => {
+        // Éxito: el backend respondió 200 OK y nos entregó el token y usuario
+        this.entrarAlSistema(res);
+      },
+      error: (err) => {
+        // Error: el backend devolvió 401 (credenciales incorrectas) o no hay conexión
+        console.error('Error en login:', err);
+        if (err.status === 0) {
+          this.mensaje.set('No se pudo conectar con el servidor (backend apagado o error de CORS)');
+        } else {
+          this.mensaje.set('Usuario o contraseña incorrectos');
+        }
+        this.error.set(true);
+      }
+    });
   }
 
-  entrarAlSistema(): void {
+  entrarAlSistema(res: any): void {
     this.error.set(false);
     this.mensaje.set('');
-    localStorage.setItem('login', 'true'); // Guardamos la sesión
+
+    // Guardamos la sesión y el token JWT devuelto por el backend
+    localStorage.setItem('login', 'true');
+    localStorage.setItem('token', res.access_token);
+    if (res.user) {
+      localStorage.setItem('user', JSON.stringify(res.user));
+    }
+
+    // Redirigimos al panel principal
     this.router.navigate(['/dashboard']);
   }
 
