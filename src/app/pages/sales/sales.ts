@@ -30,6 +30,7 @@ export class Sales {
   readonly filteredMedicines = signal<any[]>([]);
   readonly cart = signal<any[]>([]);
   readonly selectedMedicine = signal<any | undefined>(undefined);
+  readonly discount = signal<number>(0); // 👈 Signal para el descuento aplicado
 
   // IA CHAT Signals
   readonly iaQuery = signal<string>('');
@@ -42,9 +43,15 @@ export class Sales {
   readonly loadingIa = signal<boolean>(false);
   readonly textIaOpen = signal<boolean>(false);
 
-  // MIGRACIÓN ANGULAR 21: Estado derivado computed() para calcular el total
+  // 👈 Suma numérica garantizada del subtotal de cada producto en el carrito
   readonly totalCart = computed(() => {
-    return this.cart().reduce((acc, item) => acc + item.subtotal, 0);
+    return this.cart().reduce((acc, item) => acc + (Number(item.subtotal) || 0), 0);
+  });
+
+  // 👈 Total final restando el descuento aplicado
+  readonly totalACobrar = computed(() => {
+    const desc = Number(this.discount()) || 0;
+    return Math.max(0, this.totalCart() - desc);
   });
 
   sales$: Observable<Sale[]>;
@@ -76,16 +83,17 @@ export class Sales {
         .map(m => {
           const enCarrito = this.cart()
             .filter(item => item.id === m.id)
-            .reduce((acc, item) => acc + item.cantVenta, 0);
+            .reduce((acc, item) => acc + Number(item.cantVenta), 0);
 
           return {
             ...m,
-            stockDisponible: m.stock - enCarrito
+            stockDisponible: Number(m.stock) - enCarrito
           };
         })
         .filter(m =>
           (m.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-           m.laboratory.toLowerCase().includes(this.searchText.toLowerCase())) &&
+           m.laboratory.toLowerCase().includes(this.searchText.toLowerCase()) ||
+           m.id.toLowerCase().includes(this.searchText.toLowerCase())) &&
           m.stockDisponible > 0
         );
 
@@ -110,24 +118,29 @@ export class Sales {
       return;
     }
 
-    if (this.newSaleItem.quantity <= 0) {
+    const cantidad = Number(this.newSaleItem.quantity) || 0; // 👈 Aseguramos que sea número
+    const precioUnitario = Number(med.salePrice) || 0; // 👈 Aseguramos que sea número
+
+    if (cantidad <= 0) {
       this.mostrarAlerta('Cantidad inválida', true);
       return;
     }
 
-    const stockReal = med.stockDisponible ?? med.stock;
+    const stockReal = Number(med.stockDisponible ?? med.stock);
 
-    if (stockReal < this.newSaleItem.quantity) {
+    if (stockReal < cantidad) {
       this.mostrarAlerta('Stock insuficiente', true);
       return;
     }
 
+    // 👈 Creamos un nuevo arreglo para que totalCart() y totalACobrar() se actualicen al instante
     this.cart.update(prev => [
       ...prev,
       {
         ...med,
-        cantVenta: this.newSaleItem.quantity,
-        subtotal: med.salePrice * this.newSaleItem.quantity
+        salePrice: precioUnitario,
+        cantVenta: cantidad,
+        subtotal: precioUnitario * cantidad
       }
     ]);
 
@@ -145,46 +158,47 @@ export class Sales {
     this.mostrarAlerta('Producto eliminado', false);
   }
 
-  // COMPLETAR VENTA
+  // 👈 COMPLETAR VENTA CONECTADA AL BACKEND
   completeSale(): void {
     if (this.cart().length === 0) {
       this.mostrarAlerta('No hay productos en la venta', true);
       return;
     }
 
-    this.cart().forEach(item => {
-      const medicineToUpdate = this.medicines().find(m => m.id === item.id);
+    const descuentoNum = Number(this.discount()) || 0;
 
-      if (medicineToUpdate) {
-        medicineToUpdate.stock -= item.cantVenta;
+    this.salesService
+      .registrarVentaEnBackend(this.customer, this.cart(), descuentoNum)
+      .subscribe({
+        next: () => {
+          this.medicineService.loadMedicines();
 
-        const sale: Sale = {
-          id: Date.now() + Math.random(),
-          medicineId: medicineToUpdate.id,
-          quantity: item.cantVenta,
-          total: item.subtotal,
-          date: new Date()
-        };
+          // Limpiar carrito y formulario
+          this.cart.set([]);
+          this.discount.set(0);
+          this.searchText = '';
+          this.filteredMedicines.set([]);
+          this.selectedMedicine.set(undefined);
 
-        this.salesService.addSale(sale);
-        this.medicineService.updateMedicine(medicineToUpdate);
-      }
-    });
+          this.customer = {
+            name: '',
+            idNumber: '',
+            date: new Date().toISOString().split('T')[0]
+          };
 
-    // Limpiar
-    this.cart.set([]);
-    this.searchText = '';
-    this.filteredMedicines.set([]);
-    this.selectedMedicine.set(undefined);
-
-    this.customer = {
-      name: '',
-      idNumber: '',
-      date: new Date().toISOString().split('T')[0]
-    };
-
-    this.newSaleItem.quantity = 1;
-    this.mostrarAlerta('Venta realizada correctamente', false);
+          this.newSaleItem.quantity = 1;
+          this.mostrarAlerta('Venta realizada correctamente', false);
+        },
+        error: (err) => {
+          console.error('Error al registrar la venta en el backend:', err);
+          const msgBackend =
+            err?.error?.message || 'Error al registrar la venta en la base de datos';
+          this.mostrarAlerta(
+            Array.isArray(msgBackend) ? msgBackend[0] : msgBackend,
+            true
+          );
+        }
+      });
   }
 
   // CHAT IA

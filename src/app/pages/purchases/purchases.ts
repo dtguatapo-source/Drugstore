@@ -105,44 +105,46 @@ export class Purchases {
       return;
     }
 
-    if (!this.newPurchase.provider || !this.newPurchase.invoiceNumber) {
+    // 👈 Tomamos el proveedor y factura del formulario (o del primer ítem de la tabla temporal)
+    const provider = this.newPurchase.provider || this.tablaTemporal()[0]?.provider;
+    const invoiceNumber = this.newPurchase.invoiceNumber || this.tablaTemporal()[0]?.invoiceNumber;
+
+    if (!provider || !invoiceNumber) {
       this.mostrarAlerta('Complete datos de la compra', true);
       return;
     }
 
-    this.tablaTemporal().forEach(item => {
-      let m = this.listaMedicamentos().find(aux => aux.id === item.medicineId);
+    // 👈 Enviamos la compra al Backend (crea/busca el proveedor, guarda la compra y NestJS suma el stock en BD)
+    this.purchaseService
+      .registrarCompraEnBackend(provider, invoiceNumber, this.tablaTemporal())
+      .subscribe({
+        next: () => {
+          // 👈 Recargamos los medicamentos desde PostgreSQL para reflejar el nuevo stock y precios
+          this.medService.loadMedicines();
 
-      if (m) {
-        m.stock = m.stock + item.quantity;
-        this.medService.updateMedicine(m);
+          this.newPurchase = {
+            date: '',
+            provider: '',
+            invoiceNumber: '',
+            medicineId: '',
+            quantity: 0,
+            purchasePrice: 0,
+            salePrice: 0
+          };
 
-        this.purchaseService.addPurchase({
-          id: Date.now().toString(),
-          date: item.date || new Date().toISOString().split('T')[0],
-          provider: item.provider,
-          invoiceNumber: item.invoiceNumber,
-          medicineId: item.medicineId,
-          quantity: item.quantity,
-          purchasePrice: item.purchasePrice,
-          salePrice: item.salePrice,
-          total: item.quantity * item.purchasePrice
-        });
-      }
-    });
-
-    this.newPurchase = {
-      date: '',
-      provider: '',
-      invoiceNumber: '',
-      medicineId: '',
-      quantity: 0,
-      purchasePrice: 0,
-      salePrice: 0
-    };
-
-    this.mostrarAlerta('Compra registrada correctamente', false);
-    this.tablaTemporal.set([]);
+          this.tablaTemporal.set([]);
+          this.mostrarAlerta('Compra registrada correctamente', false);
+        },
+        error: (err) => {
+          console.error('Error al guardar la compra en el backend:', err);
+          const msgBackend =
+            err?.error?.message || 'Error al registrar la compra en la base de datos';
+          this.mostrarAlerta(
+            Array.isArray(msgBackend) ? msgBackend[0] : msgBackend,
+            true
+          );
+        }
+      });
   }
 
   mostrarAlerta(msg: string, esError: boolean): void {

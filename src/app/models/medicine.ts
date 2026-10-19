@@ -7,11 +7,11 @@ export interface Medicine {
 
   description: string;
 
-  keywords?: string[];
+  keywords?: string[] | string;
 
   stock: number;
   purchasePrice: number;
   salePrice: number;
 
-  status?: 'Activo' | 'Bajo stock' | 'Sin stock';
+  status?: 'Activo' | 'Bajo stock' | 'Sin stock' | 'DISPONIBLE' | 'AGOTADO' | 'VENCIDO';
 }
