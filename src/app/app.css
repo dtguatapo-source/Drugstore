@@ -1,30 +1,15 @@
-/* ===== RESET GENERAL ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ===== BASE GLOBAL ===== */
-html, body {
-  height: 100%;
-  width: 100%;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f9fafb;
-}
+/* ==========================================================================
+   APP SHELL — header, navbar, layout
+   The global reset, typography and design tokens live in src/styles.css.
+   ========================================================================== */
 
 /* ===== HEADER ===== */
 .main-header {
   width: 100%;
-  background-color: #ffffff;
-  border-bottom: 1px solid #eee;
-  padding: 20px 30px; /* 
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 20px 30px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.04);
 }
 
 /* ===== NAVBAR ===== */
@@ -46,7 +31,7 @@ body {
 .logo-circulo {
   width: 35px;
   height: 35px;
-  background-color: #e6e0f8;
+  background-color: var(--primary-soft);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -60,10 +45,10 @@ body {
 .nombre-sistema {
   font-size: 18px;
   font-weight: 600;
-  color: #4b3ca7;
+  color: var(--text-title);
 }
 
-/* ===== LINKS NAV (CENTRADOS REAL) ===== */
+/* ===== LINKS NAV (CENTRADOS) ===== */
 .LinksNav {
   display: flex;
   justify-content: center;
@@ -74,64 +59,59 @@ body {
 /* LINKS */
 .nav-link {
   text-decoration: none;
-  color: #444;
+  color: var(--text-body);
   font-size: 20px;
   padding: 6px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-btn);
   transition: all 0.3s ease;
 }
 
 /* HOVER */
 .nav-link:hover {
-  background-color: #eee;
+  background-color: var(--bg-main);
+  color: var(--text-title);
 }
 
-
 .nav-link.activo {
-  background-color: #4b3ca7;
-  color: #fff;
+  background-color: var(--primary);
+  color: var(--bg-surface);
   font-weight: 500;
 }
 
-
+/* ===== USER SECTION ===== */
 .user-section {
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 
-
-
 .admin-badge {
-  background-color: #d4f5e9;
-  color: #1a8f6a;
+  background-color: var(--primary-soft);
+  color: var(--primary-hover);
   padding: 5px 12px;
   border-radius: 15px;
   font-size: 20px;
   font-weight: 500;
 }
 
-
-
+/* ===== CONTENT ===== */
 .content {
   flex: 1;
   width: 100%;
-  padding-top: 20px; 
-  
+  padding-top: 20px;
 }
 
-
-
+/* ===== FOOTER ===== */
 .footer {
   text-align: center;
-  background-color: white;
+  background-color: var(--bg-surface);
   padding: 1.5rem;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-  border-top: 1px solid #eee;
+  box-shadow: 0 -2px 10px rgb(0 0 0 / 0.05);
+  border-top: 1px solid var(--border-color);
 }
 
 .footer p {
-  color: #000000;
+  color: var(--text-body);
   margin-bottom: 0.5rem;
 }
 
@@ -144,5 +124,4 @@ body {
 
 .social img:hover {
   transform: scale(1.2);
-}
 }

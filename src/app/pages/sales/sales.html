@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <button class="btn-add-cart" (click)="addToCart()">+ AGREGAR A LA VENTA</button>
+      <button class="btn btn-primary btn-block btn-add-cart" (click)="addToCart()">+ AGREGAR A LA VENTA</button>
     </div>
 
   </div>
@@ -102,7 +102,7 @@
                 <td>${{item.salePrice | number}}</td>
                 <td class="td-total">${{item.subtotal | number}}</td>
                 <td style="text-align: center;">
-                  <button class="btn-del" (click)="removeFromCart(i)">
+                  <button class="btn btn-danger btn-del" (click)="removeFromCart(i)">
                     <img src="iconos/basura.png" width="22">
                   </button>
                 </td>
@@ -135,7 +135,7 @@
         <h1>${{totalCart() | number}}</h1>
       </div>
 
-      <button class="btn-complete" (click)="completeSale()">CONFIRMAR Y COBRAR</button>
+      <button class="btn btn-primary btn-block btn-complete" (click)="completeSale()">CONFIRMAR Y COBRAR</button>
     </div>
   </div>
 

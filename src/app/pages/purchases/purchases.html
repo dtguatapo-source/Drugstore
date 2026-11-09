@@ -6,15 +6,37 @@
     <div class="grid-row">
       <div class="field">
         <label>FECHA</label>
-        <input type="date" [(ngModel)]="newPurchase.date">
+        <input type="date" [(ngModel)]="newPurchase.date" [min]="fechaMinima" [max]="fechaHoy">
+      </div>
+      <div class="field proveedor-field">
+        <label for="proveedor">PROVEEDOR</label>
+        <input
+          id="proveedor"
+          type="text"
+          [(ngModel)]="newPurchase.provider"
+          (input)="onProveedorInput()"
+          (focus)="filtrarProveedores()"
+          (blur)="ocultarSugerencias()"
+          placeholder="Escriba para buscar un proveedor"
+          autocomplete="off"
+        >
+        @if (mostrarSugerencias() && sugerencias().length) {
+          <ul class="sugerencias">
+            @for (proveedor of sugerencias(); track proveedor.id) {
+              <li
+                (mousedown)="$event.preventDefault()"
+                (click)="seleccionarProveedor(proveedor)"
+              >
+                <span class="sugerencia-nombre">{{ proveedor.name }}</span>
+                <span class="sugerencia-nit">{{ proveedor.nit }}</span>
+              </li>
+            }
+          </ul>
+        }
       </div>
       <div class="field">
-        <label>PROVEEDOR</label>
-        <input type="text" [(ngModel)]="newPurchase.provider" placeholder="Nombre del proveedor">
-      </div>
-      <div class="field">
-        <label>N° FACTURA</label>
-        <input type="text" [(ngModel)]="newPurchase.invoiceNumber" placeholder="Numero de factura">
+        <label>N° FACTURA (AUTOMÁTICO)</label>
+        <input type="text" [value]="newPurchase.invoiceNumber" readonly>
       </div>
     </div>
   </div>
@@ -105,10 +127,10 @@
   </div>
 
   <div class="footer-actions">
-    <button class="btn-save" (click)="guardarCompra()">
+    <button class="btn btn-primary" (click)="guardarCompra()">
       Guardar Datos
     </button>
-    <button class="btn-exit" (click)="regresar()">
+    <button class="btn btn-secondary" (click)="regresar()">
       Volver
     </button>
   </div>

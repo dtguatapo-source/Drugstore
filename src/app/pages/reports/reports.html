@@ -2,10 +2,10 @@
 
   <div class="reports-header">
     <h2>Informe de Ventas</h2>
-    <button class="btn-excel-custom" (click)="exportarExcel()">Exportar Excel</button>
+    <button class="btn btn-primary" (click)="exportarExcel()">Exportar Excel</button>
   </div>
 
-  <div class="report-card-box filters-container">
+  <div class="card report-card-box filters-container">
     <div class="filter-grid">
 
       <div class="filter-group">
@@ -43,10 +43,10 @@
       </div>
 
       <div class="filter-actions-column">
-        <button class="btn-action-primary" (click)="generarReporte()">
+        <button class="btn btn-primary" (click)="generarReporte()">
           VER REPORTE
         </button>
-        <button class="btn-action-secondary" (click)="limpiarFiltros()">
+        <button class="btn btn-secondary" (click)="limpiarFiltros()">
           LIMPIAR
         </button>
       </div>
@@ -57,7 +57,7 @@
   <!-- MIGRACIÓN ANGULAR 21: Estructura condicional @if moderna -->
   @if (reporteGenerado()) {
     <div>
-      <div class="report-card-box">
+      <div class="card report-card-box">
         <div class="report-card-header">
           <h3>Ventas Realizadas</h3>
         </div>
@@ -93,7 +93,7 @@
   }
 
   <div class="report-footer" style="margin-top: 20px;">
-    <button class="btn-return" routerLink="/dashboard">Volver al inicio</button>
+    <button class="btn btn-secondary" routerLink="/dashboard">Volver al inicio</button>
   </div>
 
   <!-- MIGRACIÓN ANGULAR 21: Alerta condicional con @if -->

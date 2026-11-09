@@ -15,6 +15,10 @@ export class SalesService {
   private _sales = new BehaviorSubject<Sale[]>([]);
   sales$ = this._sales.asObservable();
 
+  // Cantidad de tickets de venta registrados en la fecha actual (una venta puede tener varios items)
+  private _todayCount = new BehaviorSubject<number>(0);
+  todayCount$ = this._todayCount.asObservable();
+
   constructor() {
     this.loadSales(); // 👈 Al iniciar el servicio, cargamos las ventas reales desde PostgreSQL
   }
@@ -37,6 +41,15 @@ export class SalesService {
           });
         });
         this._sales.next(listaPlana);
+
+        // Contamos los tickets (no los items) cuya fecha coincide con hoy
+        const hoy = new Date().toDateString();
+        this._todayCount.next(
+          (data || []).filter((venta) => {
+            const fecha = venta.date ? new Date(venta.date) : new Date();
+            return fecha.toDateString() === hoy;
+          }).length
+        );
       },
       error: (err) => {
         console.error('Error al cargar ventas desde el backend:', err);

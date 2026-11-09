@@ -78,12 +78,16 @@ export class PurchaseService {
   registrarCompraEnBackend(
     providerName: string,
     invoiceNumber: string,
-    itemsTabla: any[]
+    itemsTabla: any[],
+    supplierId?: number
   ): Observable<any> {
-    return this.obtenerOCrearProveedorId(providerName).pipe(
-      switchMap((supplierId) => {
+    // Si el usuario ya eligio un proveedor registrado, lo usamos tal cual
+    const proveedor$ = supplierId ? of(supplierId) : this.obtenerOCrearProveedorId(providerName);
+
+    return proveedor$.pipe(
+      switchMap((idProveedor) => {
         const createPurchaseDto = {
-          supplierId: supplierId,
+          supplierId: idProveedor,
           invoiceNumber: invoiceNumber.trim(),
           items: itemsTabla.map((item) => ({
             medicineId: String(item.medicineId),
