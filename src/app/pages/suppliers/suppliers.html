@@ -1,4 +1,11 @@
 <div class="suppliers-container">
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
   <div class="card encabezado">
     <div>
       <h2>Proveedores</h2>

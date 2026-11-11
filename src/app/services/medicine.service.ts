@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core'; //  Agregamos inject para us
 import { HttpClient } from '@angular/common/http'; //  Importamos HttpClient para conectar con el Backend
 import { BehaviorSubject } from 'rxjs';
 import { Medicine } from '../models/medicine';
+import { mensajeDeError } from '../shared/mensaje-error';
 
 @Injectable({ providedIn: 'root' })
 export class MedicineService {
@@ -12,19 +13,37 @@ export class MedicineService {
   private medicines = new BehaviorSubject<Medicine[]>([]);
   medicines$ = this.medicines.asObservable();
 
+  //  Estado de la carga: cargando$ avisa que hay una petición en curso y
+  //  errorCarga$ guarda el mensaje cuando el backend no responde ('' si no hay error)
+  private cargando = new BehaviorSubject<boolean>(false);
+  cargando$ = this.cargando.asObservable();
+
+  private errorCarga = new BehaviorSubject<string>('');
+  errorCarga$ = this.errorCarga.asObservable();
+
   constructor() {
     this.loadMedicines(); // Al iniciar el servicio, consulta los medicamentos guardados en la BD
   }
 
   // Obtiene los medicamentos reales desde PostgreSQL (GET http://localhost:3000/medicines)
   loadMedicines() {
+    this.cargando.next(true);
+    this.errorCarga.next(''); //  Cada carga arranca sin el error anterior
+
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
         const adaptados = (data || []).map((m) => this.adaptarDesdeBackend(m));
         this.medicines.next(adaptados); // 👈 Si la BD está vacía, queda en [] listo para que registres desde cero
+        this.errorCarga.next('');
+        this.cargando.next(false);
       },
       error: (err) => {
         console.error('Error al cargar medicamentos desde el backend:', err);
+        //  Sin backend la tabla queda vacía, pero la pantalla avisa del fallo
+        this.errorCarga.next(
+          mensajeDeError(err, 'No se pudieron cargar los medicamentos.')
+        );
+        this.cargando.next(false); //  También se apaga cuando la carga falla
       }
     });
   }

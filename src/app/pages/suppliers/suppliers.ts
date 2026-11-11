@@ -1,13 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Supplier, SupplierPayload } from '../../models/supplier';
 import { SupplierService } from '../../services/supplier.service';
+import { EstadoCarga } from '../../shared/estado-carga/estado-carga';
 
 @Component({
   selector: 'app-suppliers',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, EstadoCarga],
   templateUrl: './suppliers.html',
   styleUrl: './suppliers.css'
 })
@@ -22,12 +24,21 @@ export class Suppliers {
   readonly mensaje = signal<string>('');
   readonly error = signal<boolean>(false);
 
+  // Estado de la carga del listado (S7): ' ' en errorCarga$ significa "sin error"
+  readonly cargando = toSignal(this.supplierService.cargando$, { initialValue: false });
+  readonly errorCarga = toSignal(this.supplierService.errorCarga$, { initialValue: '' });
+
   form: SupplierPayload = this.formularioVacio();
 
   private timeoutRef: any;
 
   constructor() {
     this.supplierService.suppliers$.subscribe((data) => this.proveedores.set(data));
+  }
+
+  // Vuelve a pedir el listado a PostgreSQL
+  reintentar(): void {
+    this.supplierService.recargar();
   }
 
   abrirNuevo(): void {

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http'; // 👈 Importamos HttpClient
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators'; // 👈 Operadores para encadenar Cliente -> Venta
 import { Sale } from '../models/sale';
+import { mensajeDeError } from '../shared/mensaje-error';
 
 @Injectable({
   providedIn: 'root'
@@ -19,12 +20,22 @@ export class SalesService {
   private _todayCount = new BehaviorSubject<number>(0);
   todayCount$ = this._todayCount.asObservable();
 
+  // Estado de la carga del historial (S7): '' en errorCarga$ significa "sin error"
+  private _cargando = new BehaviorSubject<boolean>(false);
+  cargando$ = this._cargando.asObservable();
+
+  private _errorCarga = new BehaviorSubject<string>('');
+  errorCarga$ = this._errorCarga.asObservable();
+
   constructor() {
     this.loadSales(); // 👈 Al iniciar el servicio, cargamos las ventas reales desde PostgreSQL
   }
 
   // 👈 Obtiene todas las ventas de PostgreSQL (GET http://localhost:3000/sales)
   loadSales() {
+    this._cargando.next(true);
+    this._errorCarga.next(''); // Cada carga arranca sin el error anterior
+
     this.http.get<any[]>(this.salesUrl).subscribe({
       next: (data) => {
         const listaPlana: Sale[] = [];
@@ -50,9 +61,15 @@ export class SalesService {
             return fecha.toDateString() === hoy;
           }).length
         );
+
+        this._errorCarga.next('');
+        this._cargando.next(false);
       },
       error: (err) => {
         console.error('Error al cargar ventas desde el backend:', err);
+        // Sin backend las cifras quedan en cero, pero la pantalla avisa del fallo
+        this._errorCarga.next(mensajeDeError(err, 'No se pudieron cargar las ventas.'));
+        this._cargando.next(false); // También se apaga cuando la carga falla
       }
     });
   }

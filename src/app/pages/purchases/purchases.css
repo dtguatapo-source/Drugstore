@@ -46,6 +46,17 @@
   margin-top: 10px;
 }
 
+/* Segunda fila del formulario: separa los precios de los datos de factura */
+.separacion-superior {
+  margin-top: 25px;
+}
+
+/* Celda de la tabla temporal cuando todavia no hay productos */
+.vacio {
+  padding: 20px;
+  text-align: center;
+}
+
 /* --- Autocompletado de proveedores --- */
 .proveedor-field {
   position: relative;

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators'; 
 import { Purchase } from '../models/purchase';
+import { mensajeDeError } from '../shared/mensaje-error';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +16,21 @@ export class PurchaseService {
   private purchases = new BehaviorSubject<Purchase[]>([]);
   purchases$ = this.purchases.asObservable();
 
+  // Estado de la carga (S7): '' en errorCarga$ significa "sin error"
+  private cargando = new BehaviorSubject<boolean>(false);
+  cargando$ = this.cargando.asObservable();
+
+  private errorCarga = new BehaviorSubject<string>('');
+  errorCarga$ = this.errorCarga.asObservable();
+
   constructor() {
     this.loadPurchases(); 
   }
 
   loadPurchases() {
+    this.cargando.next(true);
+    this.errorCarga.next(''); // Cada carga arranca sin el error anterior
+
     this.http.get<any[]>(this.purchasesUrl).subscribe({
       next: (data) => {
         const listaPlana: Purchase[] = [];
@@ -43,9 +54,14 @@ export class PurchaseService {
           });
         });
         this.purchases.next(listaPlana);
+        this.errorCarga.next('');
+        this.cargando.next(false);
       },
       error: (err) => {
         console.error('Error al cargar compras desde el backend:', err);
+        // Sin backend la lista queda vacía, pero la pantalla avisa del fallo
+        this.errorCarga.next(mensajeDeError(err, 'No se pudieron cargar las compras.'));
+        this.cargando.next(false); // También se apaga cuando la carga falla
       }
     });
   }

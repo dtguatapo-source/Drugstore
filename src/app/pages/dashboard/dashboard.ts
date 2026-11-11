@@ -5,12 +5,13 @@ import { Router, RouterLink } from '@angular/router';
 import { Medicine } from '../../models/medicine';
 import { MedicineService } from '../../services/medicine.service';
 import { SalesService } from '../../services/sales.service';
+import { EstadoCarga } from '../../shared/estado-carga/estado-carga';
 import { esTokenVigente, limpiarSesion } from '../auth.guard/auth.guard';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, EstadoCarga],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -39,6 +40,25 @@ export class Dashboard {
   readonly alertasStock = computed(
     () => this.medicamentos().filter((m) => Number(m.stock) < 20).length
   );
+
+  // Estado de la carga de los indicadores (S7): sin backend los ceros no son reales
+  private readonly cargandoMedicamentos = toSignal(this.medicineService.cargando$, {
+    initialValue: false
+  });
+  private readonly cargandoVentas = toSignal(this.salesService.cargando$, { initialValue: false });
+  private readonly errorMedicamentos = toSignal(this.medicineService.errorCarga$, {
+    initialValue: ''
+  });
+  private readonly errorVentas = toSignal(this.salesService.errorCarga$, { initialValue: '' });
+
+  readonly cargando = computed(() => this.cargandoMedicamentos() || this.cargandoVentas());
+  readonly errorCarga = computed(() => this.errorMedicamentos() || this.errorVentas());
+
+  // Vuelve a pedir el catálogo y el resumen del día a PostgreSQL
+  reintentar(): void {
+    this.medicineService.loadMedicines();
+    this.salesService.loadSales();
+  }
 
   constructor() {
     // Si no hay sesión activa, redirige al login (solo en el navegador)

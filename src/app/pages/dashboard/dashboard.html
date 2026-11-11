@@ -1,3 +1,10 @@
+<!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+<app-estado-carga
+  [cargando]="cargando()"
+  [error]="errorCarga()"
+  (reintentar)="reintentar()"
+/>
+
 <!-- header principal -->
 <div class="header-seccion">
   <!-- logo pequeno -->

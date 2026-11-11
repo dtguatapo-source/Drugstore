@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Supplier, SupplierPayload } from '../models/supplier';
+import { mensajeDeError } from '../shared/mensaje-error';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,13 @@ export class SupplierService {
 
   private readonly suppliers = new BehaviorSubject<Supplier[]>([]);
   readonly suppliers$ = this.suppliers.asObservable();
+
+  // Estado de la carga (S7): '' en errorCarga$ significa "sin error"
+  private readonly cargando = new BehaviorSubject<boolean>(false);
+  readonly cargando$ = this.cargando.asObservable();
+
+  private readonly errorCarga = new BehaviorSubject<string>('');
+  readonly errorCarga$ = this.errorCarga.asObservable();
 
   constructor() {
     // Igual que el resto de los servicios: carga inicial desde PostgreSQL
@@ -56,8 +64,20 @@ export class SupplierService {
   }
 
   private refrescar(): void {
+    this.cargando.next(true);
+    this.errorCarga.next(''); // Cada carga arranca sin el error anterior
+
     this.getSuppliers().subscribe({
-      error: (err) => console.error('Error al cargar proveedores desde el backend:', err)
+      next: () => {
+        this.errorCarga.next('');
+        this.cargando.next(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar proveedores desde el backend:', err);
+        // Sin backend la tabla queda vacía, pero la pantalla avisa del fallo
+        this.errorCarga.next(mensajeDeError(err, 'No se pudieron cargar los proveedores.'));
+        this.cargando.next(false); // También se apaga cuando la carga falla
+      }
     });
   }
 

@@ -57,6 +57,10 @@ thead th {
   top: 0;
 }
 
+.fila-clicable {
+  cursor: pointer;
+}
+
 .etiqueta-estado {
   display: inline-block;
   padding: 4px 10px;

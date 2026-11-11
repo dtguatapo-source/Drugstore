@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SalesService } from '../../services/sales.service';
 import { MedicineService } from '../../services/medicine.service';
 import { Sale } from '../../models/sale';
@@ -6,12 +7,13 @@ import { Medicine } from '../../models/medicine';
 import { Observable } from 'rxjs';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { EstadoCarga } from '../../shared/estado-carga/estado-carga';
 
 @Component({
   selector: 'app-sales',
   standalone: true,
   // MIGRACIÓN ANGULAR 21: Importación directa de DecimalPipe y FormsModule
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, EstadoCarga],
   templateUrl: './sales.html',
   styleUrl: './sales.css'
 })
@@ -28,6 +30,19 @@ export class Sales {
   readonly cart = signal<any[]>([]);
   readonly selectedMedicine = signal<any | undefined>(undefined);
   readonly discount = signal<number>(0); // 👈 Signal para el descuento aplicado
+
+  // Estado de la carga (S7): esta pantalla depende de las ventas y de los medicamentos
+  private readonly cargandoVentas = toSignal(this.salesService.cargando$, { initialValue: false });
+  private readonly cargandoMedicamentos = toSignal(this.medicineService.cargando$, {
+    initialValue: false
+  });
+  private readonly errorVentas = toSignal(this.salesService.errorCarga$, { initialValue: '' });
+  private readonly errorMedicamentos = toSignal(this.medicineService.errorCarga$, {
+    initialValue: ''
+  });
+
+  readonly cargando = computed(() => this.cargandoVentas() || this.cargandoMedicamentos());
+  readonly errorCarga = computed(() => this.errorVentas() || this.errorMedicamentos());
 
   // 👈 Suma numérica garantizada del subtotal de cada producto en el carrito
   readonly totalCart = computed(() => {
@@ -60,6 +75,12 @@ export class Sales {
     this.medicineService.medicines$.subscribe(data => {
       this.medicines.set(data);
     });
+  }
+
+  // Vuelve a pedir las ventas y los medicamentos a PostgreSQL
+  reintentar(): void {
+    this.salesService.loadSales();
+    this.medicineService.loadMedicines();
   }
 
   // BUSCADOR

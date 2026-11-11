@@ -3,6 +3,13 @@
     <h1 class="main-title">Registro de Ventas</h1>
   </div>
 
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
   <div class="top-grid">
 
     <div class="card panel-cliente">

@@ -1,4 +1,5 @@
-import { Component, inject, signal, ViewEncapsulation } from '@angular/core';
+import { Component, inject, signal, computed, ViewEncapsulation } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MedicineService } from '../../services/medicine.service';
 import { Medicine } from '../../models/medicine';
 import { PurchaseService } from '../../services/purchase.service';
@@ -6,12 +7,13 @@ import { SupplierService } from '../../services/supplier.service';
 import { Supplier } from '../../models/supplier';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { EstadoCarga } from '../../shared/estado-carga/estado-carga';
 
 @Component({
   selector: 'app-purchases',
   standalone: true,
   // MIGRACIÓN ANGULAR 21: Se remueve CommonModule ya que el nuevo control flow (@for, @if) no lo requiere
-  imports: [FormsModule],
+  imports: [FormsModule, EstadoCarga],
   templateUrl: './purchases.html',
   styleUrl: './purchases.css',
   encapsulation: ViewEncapsulation.None
@@ -32,6 +34,19 @@ export class Purchases {
   readonly proveedores = signal<Supplier[]>([]);
   readonly sugerencias = signal<Supplier[]>([]);
   readonly mostrarSugerencias = signal<boolean>(false);
+
+  // Estado de la carga (S7): esta pantalla depende de las compras y de los medicamentos
+  private readonly cargandoCompras = toSignal(this.purchaseService.cargando$, {
+    initialValue: false
+  });
+  private readonly cargandoMedicamentos = toSignal(this.medService.cargando$, {
+    initialValue: false
+  });
+  private readonly errorCompras = toSignal(this.purchaseService.errorCarga$, { initialValue: '' });
+  private readonly errorMedicamentos = toSignal(this.medService.errorCarga$, { initialValue: '' });
+
+  readonly cargando = computed(() => this.cargandoCompras() || this.cargandoMedicamentos());
+  readonly errorCarga = computed(() => this.errorCompras() || this.errorMedicamentos());
 
   // Rango permitido para la fecha de compra: hoy y los 4 dias anteriores
   readonly fechaHoy = this.formatearFecha(new Date());
@@ -63,6 +78,12 @@ export class Purchases {
 
     // Proveedores registrados para el autocompletado del campo PROVEEDOR
     this.supplierService.suppliers$.subscribe(data => this.proveedores.set(data));
+  }
+
+  // Vuelve a pedir las compras y los medicamentos a PostgreSQL
+  reintentar(): void {
+    this.purchaseService.loadPurchases();
+    this.medService.loadMedicines();
   }
 
   /* ===== Autocompletado de proveedores ===== */

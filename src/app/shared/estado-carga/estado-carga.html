@@ -1,0 +1,8 @@
+@if (error()) {
+  <div class="status-banner" role="alert">
+    <span>{{ error() }}</span>
+    <button type="button" class="btn btn-secondary" (click)="reintentar.emit()">Reintentar</button>
+  </div>
+} @else if (cargando()) {
+  <p class="cargando" role="status">Cargando información…</p>
+}

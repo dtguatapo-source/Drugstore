@@ -1,13 +1,15 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MedicineService } from '../../services/medicine.service';
 import { Medicine } from '../../models/medicine';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { EstadoCarga } from '../../shared/estado-carga/estado-carga';
 
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, EstadoCarga],
   templateUrl: './inventory.html',
   styleUrl: './inventory.css' 
 })
@@ -20,6 +22,11 @@ export class Inventory {
   readonly error = signal<boolean>(false);
   readonly filtroTexto = signal<string>('');
   readonly listaCompleta = signal<Medicine[]>([]);
+
+  // Estado de la carga del inventario (S7): sin backend la tabla se ve vacía,
+  // pero la pantalla avisa y ofrece reintentar
+  readonly cargando = toSignal(this.servicio.cargando$, { initialValue: false });
+  readonly errorCarga = toSignal(this.servicio.errorCarga$, { initialValue: '' });
 
   // Estado derivado: se recalcula automáticamente cuando cambia listaCompleta o filtroTexto
   readonly listaFiltrada = computed(() => {
@@ -52,6 +59,11 @@ export class Inventory {
 
   generarId(): string {
     return 'MED-' + Math.floor(Math.random() * 500);
+  }
+
+  // Vuelve a pedir el inventario a PostgreSQL
+  reintentar(): void {
+    this.servicio.loadMedicines();
   }
 
   registrar(): void {

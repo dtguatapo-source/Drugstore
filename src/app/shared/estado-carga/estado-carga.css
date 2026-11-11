@@ -1,0 +1,6 @@
+/* Línea de carga: el banner de error viene del .status-banner global */
+.cargando {
+  margin: 0 0 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}

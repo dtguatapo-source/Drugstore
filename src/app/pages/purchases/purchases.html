@@ -1,6 +1,13 @@
 <div class="purchase-container">
   <h2>Registro de Compras</h2>
 
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
   <div class="card">
     <p class="section-title">DATOS DE LA COMPRA</p>
     <div class="grid-row">
@@ -66,7 +73,7 @@
       </div>
     </div>
 
-    <div class="grid-row" style="margin-top: 25px;">
+    <div class="grid-row separacion-superior">
       <div class="field">
         <label>CANTIDAD</label>
         <input type="number" [(ngModel)]="newPurchase.quantity">
@@ -116,7 +123,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" style="text-align: center; padding: 20px;">
+              <td colspan="7" class="vacio">
                 No hay productos en la lista
               </td>
             </tr>

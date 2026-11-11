@@ -1,5 +1,12 @@
 <div class="inventory-container">
 
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
   <div class="header-seccion">
     <h2>Gestión de Inventario</h2>
 
@@ -65,7 +72,7 @@
         <tbody>
           <!-- Uso de @for moderno de Angular 21 -->
           @for (m of listaFiltrada(); track m.id) {
-            <tr (click)="seleccionar(m)" style="cursor: pointer;">
+            <tr (click)="seleccionar(m)" class="fila-clicable">
               <td>{{ m.id }}</td>
               <td>{{ m.name }}</td>
               <td>{{ m.laboratory }}</td>
