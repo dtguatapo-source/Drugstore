@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Medicine } from '../../models/medicine';
 import { MedicineService } from '../../services/medicine.service';
 import { SalesService } from '../../services/sales.service';
+import { esTokenVigente, limpiarSesion } from '../auth.guard/auth.guard';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,7 +24,9 @@ export class Dashboard {
   // localStorage solo existe en el navegador: durante el prerender SSR
   // se arranca sin sesión para no romper el build.
   readonly isLoggedIn = signal<boolean>(
-    isPlatformBrowser(this.platformId) ? !!localStorage.getItem('login') : false
+    isPlatformBrowser(this.platformId)
+      ? !!localStorage.getItem('login') && esTokenVigente(localStorage.getItem('token'))
+      : false
   );
 
   private readonly medicamentos = toSignal(this.medicineService.medicines$, {
@@ -45,7 +48,7 @@ export class Dashboard {
   }
 
   salir(): void {
-    localStorage.removeItem('login');
+    limpiarSesion();
     this.isLoggedIn.set(false);
     this.router.navigate(['/login']);
   }
