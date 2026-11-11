@@ -16,13 +16,6 @@
       "tradeoff": "Expone el modo Compras entero: los cuatro KPIs de compras, la nota de que son líneas y no facturas, la tendencia, el top y la tabla de seis columnas con proveedor; comparar con el modo Ventas exige abrir el otro tablero, y el KPI de medicamento más comprado se parte en dos líneas.",
       "width": 1440,
       "height": 900
-    },
-    {
-      "file": "03-ventas-descuento.html",
-      "title": "Ventas — carrito con descuento aplicado",
-      "tradeoff": "Pone el descuento en contexto real: subtotal, tope del 50 % en la ayuda del campo y el total a cobrar actualizado; como la línea de carga y el banner de error son excluyentes, el estado de error queda debajo del pliegue y el tablero es más alto que los 900 px declarados.",
-      "width": 1440,
-      "height": 900
     }
   ]
 }
