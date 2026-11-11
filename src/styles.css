@@ -182,6 +182,36 @@ button {
   width: 100%;
 }
 
+/* ===== SELECTOR DE PESTAÑAS (reutilizable, combinable con .btn) ===== */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab[aria-selected='true'] {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.tab[aria-selected='true']:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.tab[aria-selected='false'] {
+  background-color: var(--bg-surface);
+  border-color: var(--border-color);
+  color: var(--text-body);
+}
+
+.tab[aria-selected='false']:hover:not(:disabled) {
+  background-color: var(--bg-main);
+  color: var(--text-title);
+}
+
 /* ===== TARJETAS Y SECCIONES ===== */
 .card {
   background-color: var(--bg-surface);

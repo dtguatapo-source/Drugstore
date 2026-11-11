@@ -1,13 +1,15 @@
 import { Component, inject, signal, computed, PLATFORM_ID, DestroyRef } from '@angular/core';
-import { isPlatformBrowser, DecimalPipe } from '@angular/common';
+import { isPlatformBrowser, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { take, timeout, finalize } from 'rxjs/operators';
 import { SalesService } from '../../services/sales.service';
 import { MedicineService } from '../../services/medicine.service';
+import { PurchaseService } from '../../services/purchase.service';
 import { Sale } from '../../models/sale';
 import { Medicine } from '../../models/medicine';
+import { Purchase } from '../../models/purchase';
 import * as XLSX from 'xlsx';
 
 export interface ReportSummary {
@@ -30,7 +32,10 @@ export interface TopMedicineItem {
   total: number;
 }
 
-/** Fila de la tabla general / filtrada de movimientos. */
+/** Modo activo del informe. */
+export type ModoInforme = 'ventas' | 'compras';
+
+/** Fila de la tabla general / filtrada de ventas. */
 export interface MovimientoRow {
   id: number | string;
   dia: string;
@@ -39,7 +44,21 @@ export interface MovimientoRow {
   total: number;
 }
 
-/** Movimiento mínimo necesario para filtrar y agrupar (sirve para ventas y, más adelante, compras). */
+/** Fila de la tabla general / filtrada de compras. */
+export interface CompraRow {
+  id: string;
+  dia: string;
+  proveedor: string;
+  medicamento: string;
+  cantidad: number;
+  precioUnitario: number;
+  total: number;
+}
+
+/** Fila tal como se escribe en el Excel exportado. */
+export type FilaExportable = Record<string, string | number>;
+
+/** Movimiento mínimo necesario para filtrar y agrupar (sirve para ventas y compras). */
 export interface MovimientoFiltrable {
   medicineId: string;
   quantity: number;
@@ -57,6 +76,7 @@ export interface CriterioMovimientos {
 const API_URL = 'http://localhost:3000/reports';
 const REQUEST_TIMEOUT = 8000;
 const RECIENTES_MAX = 10;
+const TOP_MAX = 5;
 
 const EMPTY_SUMMARY: ReportSummary = {
   sales: { total: 0, count: 0, items: 0 },
@@ -67,7 +87,7 @@ const EMPTY_SUMMARY: ReportSummary = {
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [RouterModule, FormsModule, DecimalPipe],
+  imports: [RouterModule, FormsModule, DecimalPipe, NgTemplateOutlet],
   templateUrl: './reports.html',
   styleUrls: ['./reports.css']
 })
@@ -77,6 +97,7 @@ export class Reports {
   private readonly destroyRef = inject(DestroyRef);
   private readonly salesService = inject(SalesService);
   private readonly medicineService = inject(MedicineService);
+  private readonly purchaseService = inject(PurchaseService);
 
   readonly mensaje = signal<string>('');
   readonly error = signal<boolean>(false);
@@ -84,10 +105,19 @@ export class Reports {
   readonly filteredMedicines = signal<Medicine[]>([]);
   readonly selectedMedicine = signal<Medicine | undefined>(undefined);
   readonly filteredSales = signal<Sale[]>([]);
+  readonly filteredCompras = signal<Purchase[]>([]);
   readonly reporteGenerado = signal<boolean>(false);
+
+  /** Modo del informe: define qué KPIs, gráficas, tabla y exportación se muestran. */
+  readonly modo = signal<ModoInforme>('ventas');
 
   /** Historial de ventas del servicio, usado para la tabla y el agregado en el navegador. */
   readonly sales = signal<Sale[]>([]);
+
+  /** Historial de compras del servicio (una fila por item de compra). */
+  readonly purchases = signal<Purchase[]>([]);
+  readonly cargandoCompras = signal<boolean>(false);
+  readonly errorCompras = signal<string>('');
 
   readonly summary = signal<ReportSummary>(EMPTY_SUMMARY);
   readonly salesByDate = signal<SalesByDateItem[]>([]);
@@ -128,6 +158,55 @@ export class Reports {
       : this.filasGenerales()
   );
 
+  // ===== Compras: misma mecánica, alimentada por PurchaseService.purchases$ =====
+
+  /**
+   * Base de los KPIs y de las gráficas de compras: todo el historial en la vista
+   * general y solo el filtro aplicado cuando hay uno activo.
+   */
+  readonly comprasBase = computed<Purchase[]>(() =>
+    this.reporteGenerado() ? this.filteredCompras() : this.purchases()
+  );
+
+  readonly chartCompras = computed<SalesByDateItem[]>(() =>
+    this.agruparPorDia(this.comprasBase())
+  );
+
+  readonly maxCompraDiaria = computed(() => {
+    const items = this.chartCompras();
+    if (!items.length) return 1;
+    return Math.max(...items.map((i) => i.total), 1);
+  });
+
+  readonly topCompras = computed<TopMedicineItem[]>(() =>
+    this.agregarTopPorCantidad(this.comprasBase())
+  );
+
+  readonly totalInvertido = computed(() =>
+    this.comprasBase().reduce((suma, compra) => suma + (Number(compra.total) || 0), 0)
+  );
+
+  readonly lineasCompra = computed(() => this.comprasBase().length);
+
+  readonly proveedoresDistintos = computed(
+    () => new Set(this.comprasBase().map((compra) => compra.provider)).size
+  );
+
+  readonly medicamentoMasComprado = computed<{ nombre: string; cantidad: number } | null>(() => {
+    const top = this.topCompras()[0];
+    return top ? { nombre: top.name ?? top.medicineId, cantidad: top.quantity } : null;
+  });
+
+  readonly filasGeneralesCompras = computed<CompraRow[]>(() =>
+    this.ultimosMovimientos(this.purchases()).map((compra) => this.filaDeCompra(compra))
+  );
+
+  readonly filasCompras = computed<CompraRow[]>(() =>
+    this.reporteGenerado()
+      ? this.ordenarPorFechaDesc(this.filteredCompras()).map((compra) => this.filaDeCompra(compra))
+      : this.filasGeneralesCompras()
+  );
+
   readonly tituloTabla = computed(() =>
     this.reporteGenerado() ? 'Detalle de Ventas Filtradas' : 'Registros Recientes'
   );
@@ -145,6 +224,66 @@ export class Reports {
       : 'Todavía no hay ventas registradas.'
   );
 
+  readonly tituloTablaCompras = computed(() =>
+    this.reporteGenerado() ? 'Detalle de Compras Filtradas' : 'Compras Recientes'
+  );
+
+  readonly notaTablaCompras = computed(() => {
+    const cantidad = this.filasCompras().length;
+    return this.reporteGenerado()
+      ? `${cantidad} compra(s) para el filtro aplicado.`
+      : `Resumen de las últimas ${RECIENTES_MAX} compras registradas.`;
+  });
+
+  readonly mensajeVacioCompras = computed(() =>
+    this.reporteGenerado()
+      ? 'No hay compras registradas para este filtro.'
+      : 'Todavía no hay compras registradas.'
+  );
+
+  /** Nombre de la hoja y del archivo exportado según el modo activo. */
+  readonly nombreHoja = computed(() =>
+    this.modo() === 'compras' ? 'Informe de Compras' : 'Informe de Ventas'
+  );
+
+  /** Base completa de ventas: todo el historial, o solo el filtro cuando hay uno. */
+  private readonly ventasBase = computed<Sale[]>(() =>
+    this.reporteGenerado() ? this.filteredSales() : this.sales()
+  );
+
+  /** Filas completas de ventas para exportar (sin el tope de la tabla visible). */
+  private readonly filasExportacionVentas = computed<MovimientoRow[]>(() =>
+    this.ordenarPorFechaDesc(this.ventasBase()).map((venta) => this.filaDeVenta(venta))
+  );
+
+  /** Filas completas de compras para exportar (sin el tope de la tabla visible). */
+  private readonly filasExportacionCompras = computed<CompraRow[]>(() =>
+    this.ordenarPorFechaDesc(this.comprasBase()).map((compra) => this.filaDeCompra(compra))
+  );
+
+  /**
+   * Filas que se exportan: siempre el conjunto COMPLETO del modo activo (el filtro
+   * cuando hay filtro, todo el historial cuando no lo hay). La tabla visible se
+   * acota a los últimos movimientos, pero un informe exportado no debe perder filas.
+   */
+  readonly filasExportables = computed<FilaExportable[]>(() =>
+    this.modo() === 'compras'
+      ? this.filasExportacionCompras().map((fila) => ({
+          Fecha: this.formatFecha(fila.dia),
+          Proveedor: fila.proveedor,
+          Medicamento: fila.medicamento,
+          Cantidad: fila.cantidad,
+          'Precio Unitario': fila.precioUnitario,
+          Total: fila.total
+        }))
+      : this.filasExportacionVentas().map((fila) => ({
+          'Fecha de Venta': this.formatFecha(fila.dia),
+          Medicamento: fila.medicamento,
+          'Cantidad Vendida': fila.cantidad,
+          'Total de Venta': fila.total
+        }))
+  );
+
   searchText = '';
   fechaDesde = '';
   fechaHasta = '';
@@ -155,6 +294,9 @@ export class Reports {
   constructor() {
     this.medicineService.medicines$.subscribe((data) => this.medicines.set(data));
     this.salesService.sales$.subscribe((data) => this.sales.set(data));
+    this.purchaseService.purchases$.subscribe((data) => this.purchases.set(data ?? []));
+    this.purchaseService.cargando$.subscribe((valor) => this.cargandoCompras.set(!!valor));
+    this.purchaseService.errorCarga$.subscribe((texto) => this.errorCompras.set(texto ?? ''));
 
     if (isPlatformBrowser(this.platformId)) {
       this.cargarEstadisticasBackend();
@@ -175,6 +317,11 @@ export class Reports {
     this.pedir<TopMedicineItem[]>('top-medicines', (res) => this.topMedicines.set(res ?? []));
   }
 
+  /** Reintenta la carga de compras desde el servicio. */
+  recargarCompras(): void {
+    this.purchaseService.loadPurchases();
+  }
+
   private pedir<T>(ruta: string, aplicar: (res: T) => void): void {
     this.http
       .get<T>(`${API_URL}/${ruta}`)
@@ -193,8 +340,15 @@ export class Reports {
     if (this.pendientes === 0) this.cargando.set(false);
   }
 
-  getBarWidth(total: number): number {
-    return Math.max(8, Math.round((total / this.maxDailySale()) * 100));
+  getBarWidth(total: number, maximo: number = this.maxDailySale()): number {
+    return Math.max(8, Math.round((total / maximo) * 100));
+  }
+
+  /** Cambia el modo y deja los filtros limpios para no arrastrar datos del otro informe. */
+  cambiarModo(modo: ModoInforme): void {
+    if (this.modo() === modo) return;
+    this.limpiarFiltros();
+    this.modo.set(modo);
   }
 
   /** El rango es inválido cuando "Desde" es posterior a "Hasta". */
@@ -222,22 +376,9 @@ export class Reports {
     this.mensaje.set('');
   }
 
+  /** Exporta las filas del modo activo (filtradas o generales) a un .xlsx. */
   exportarExcel(): void {
-    const tieneFiltro = this.reporteGenerado();
-    const filas = tieneFiltro
-      ? this.filteredSales().map((s) => ({
-          'Fecha de Venta': new Date(s.date).toLocaleDateString(),
-          Medicamento: this.getMedicineName(s.medicineId),
-          'Cantidad Vendida': s.quantity,
-          'Total de Venta': s.total
-        }))
-      : this.topMedicines().map((t) => ({
-          Código: t.medicineId,
-          Medicamento: t.name ?? t.medicineId,
-          Laboratorio: t.laboratory ?? 'General',
-          'Unidades Vendidas': t.quantity,
-          'Total Recaudado': t.total
-        }));
+    const filas = this.filasExportables();
 
     if (filas.length === 0) {
       this.mostrarAlerta('No hay datos para exportar', true);
@@ -246,8 +387,8 @@ export class Reports {
 
     const hoja = XLSX.utils.json_to_sheet(filas);
     const libro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(libro, hoja, 'Reporte de Ventas');
-    XLSX.writeFile(libro, 'Reporte_Ventas_Drogueria.xlsx');
+    XLSX.utils.book_append_sheet(libro, hoja, this.nombreHoja());
+    XLSX.writeFile(libro, `${this.nombreHoja()}.xlsx`);
     this.mostrarAlerta('Archivo Excel generado con éxito');
   }
 
@@ -273,7 +414,7 @@ export class Reports {
     return med ? med.name : 'Producto';
   }
 
-  // ===== Helpers puros de agregación (reutilizables para el modo Compras) =====
+  // ===== Helpers puros de agregación (ventas y compras) =====
 
   /**
    * Día calendario en ISO local (YYYY-MM-DD). Nunca construye un Date a partir
@@ -309,6 +450,35 @@ export class Reports {
     return Array.from(acumulado.entries())
       .map(([date, valor]) => ({ date, total: valor.total, count: valor.count }))
       .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  /**
+   * Medicamentos con más unidades en el conjunto de movimientos dado, de mayor a
+   * menor. Reutiliza el mismo shape que el top del backend.
+   */
+  agregarTopPorCantidad(movimientos: MovimientoFiltrable[], maximo: number = TOP_MAX): TopMedicineItem[] {
+    const acumulado = new Map<string, { quantity: number; total: number }>();
+
+    (movimientos ?? []).forEach((movimiento) => {
+      const actual = acumulado.get(movimiento.medicineId) ?? { quantity: 0, total: 0 };
+      actual.quantity += Number(movimiento.quantity) || 0;
+      actual.total += Number(movimiento.total) || 0;
+      acumulado.set(movimiento.medicineId, actual);
+    });
+
+    return Array.from(acumulado.entries())
+      .map(([medicineId, valor]) => {
+        const med = this.medicines().find((m) => m.id === medicineId);
+        return {
+          medicineId,
+          name: med?.name ?? null,
+          laboratory: med?.laboratory ?? null,
+          quantity: valor.quantity,
+          total: valor.total
+        };
+      })
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, maximo);
   }
 
   /**
@@ -359,6 +529,19 @@ export class Reports {
     };
   }
 
+  /** Convierte una línea de compra del historial en una fila mostrable de la tabla. */
+  filaDeCompra(compra: Purchase): CompraRow {
+    return {
+      id: compra.id,
+      dia: this.diaISO(compra.date),
+      proveedor: compra.provider,
+      medicamento: this.getMedicineName(compra.medicineId),
+      cantidad: Number(compra.quantity) || 0,
+      precioUnitario: Number(compra.purchasePrice) || 0,
+      total: Number(compra.total) || 0
+    };
+  }
+
   generarReporte(): void {
     const med = this.selectedMedicine();
     const desde = this.fechaDesde;
@@ -380,6 +563,20 @@ export class Reports {
       return;
     }
 
+    // El modo activo define qué historial se filtra.
+    if (this.modo() === 'compras') {
+      const resultados = this.filtrarMovimientos(this.purchases(), {
+        medicineId: med?.id,
+        desde,
+        hasta
+      });
+
+      this.filteredCompras.set(resultados);
+      this.reporteGenerado.set(true);
+      this.avisarResultado(resultados.length);
+      return;
+    }
+
     this.salesService.sales$.pipe(take(1)).subscribe((allSales) => {
       const resultados = this.filtrarMovimientos(allSales, {
         medicineId: med?.id,
@@ -389,13 +586,16 @@ export class Reports {
 
       this.filteredSales.set(resultados);
       this.reporteGenerado.set(true);
-
-      if (resultados.length === 0) {
-        this.mostrarAlerta('No se encontraron datos', true);
-      } else {
-        this.mostrarAlerta('Reporte generado');
-      }
+      this.avisarResultado(resultados.length);
     });
+  }
+
+  private avisarResultado(cantidad: number): void {
+    if (cantidad === 0) {
+      this.mostrarAlerta('No se encontraron datos', true);
+    } else {
+      this.mostrarAlerta('Reporte generado');
+    }
   }
 
   limpiarFiltros(): void {
@@ -404,6 +604,7 @@ export class Reports {
     this.fechaDesde = '';
     this.fechaHasta = '';
     this.filteredSales.set([]);
+    this.filteredCompras.set([]);
     this.reporteGenerado.set(false);
     this.filteredMedicines.set([]);
   }

@@ -2,14 +2,40 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 import { Reports } from './reports';
+import { PurchaseService } from '../../services/purchase.service';
+import { Purchase } from '../../models/purchase';
+
+/**
+ * Doble de PurchaseService: el resto de la suite no debe depender del backend de
+ * compras, así que se controlan los observables a mano.
+ */
+function crearComprasFake() {
+  const compras = new BehaviorSubject<Purchase[]>([]);
+  const cargando = new BehaviorSubject<boolean>(false);
+  const error = new BehaviorSubject<string>('');
+
+  return {
+    purchases$: compras.asObservable(),
+    cargando$: cargando.asObservable(),
+    errorCarga$: error.asObservable(),
+    loadPurchases: () => undefined,
+    emitir: (lista: Purchase[]) => compras.next(lista),
+    fallar: (mensaje: string) => error.next(mensaje),
+  };
+}
 
 describe('Reports', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Reports],
-      providers: [provideHttpClient(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: PurchaseService, useValue: crearComprasFake() },
+      ],
     }).compileComponents();
   });
 
@@ -34,7 +60,12 @@ describe('Reports', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [Reports],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: PurchaseService, useValue: crearComprasFake() },
+      ],
     });
 
     const httpMock = TestBed.inject(HttpTestingController);
@@ -122,9 +153,15 @@ describe('Reports', () => {
 
   function montarConFixtures() {
     TestBed.resetTestingModule();
+    const comprasFake = crearComprasFake();
     TestBed.configureTestingModule({
       imports: [Reports],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: PurchaseService, useValue: comprasFake },
+      ],
     });
 
     const httpMock = TestBed.inject(HttpTestingController);
@@ -175,7 +212,27 @@ describe('Reports', () => {
       return encontrado;
     };
 
-    return { httpMock, fixture, flushServicios, flushReportes, filas, textoFilas, escribirBusqueda, escribirFecha, boton };
+    const pestana = (etiqueta: string): HTMLButtonElement => {
+      const encontrada = (
+        Array.from(fixture.nativeElement.querySelectorAll('[role="tab"]')) as HTMLButtonElement[]
+      ).find((b) => (b.textContent ?? '').trim().toLowerCase() === etiqueta.toLowerCase());
+      if (!encontrada) throw new Error(`No se encontró la pestaña ${etiqueta}`);
+      return encontrada;
+    };
+
+    return {
+      httpMock,
+      fixture,
+      flushServicios,
+      flushReportes,
+      filas,
+      textoFilas,
+      escribirBusqueda,
+      escribirFecha,
+      boton,
+      pestana,
+      compras: comprasFake,
+    };
   }
 
   it('should render the recent-records table on load, without any filter', () => {
@@ -315,6 +372,185 @@ describe('Reports', () => {
     expect(banner?.getAttribute('role')).toBe('alert');
     expect(banner?.textContent).toContain('Reintentar');
     expect(indicador()).toBeNull();
+    httpMock.verify();
+  });
+
+  // ===== S12: selector Informe de Ventas / Informe de Compras =====
+  // Compras ya vienen planas del servicio: una fila por item de compra.
+  const COMPRAS_BACKEND: Purchase[] = [
+    {
+      id: 'C1',
+      date: '2026-11-09',
+      provider: 'Droguería Sur',
+      invoiceNumber: 'A-0001',
+      medicineId: 'M1',
+      quantity: 10,
+      purchasePrice: 100,
+      salePrice: 200,
+      expiryDate: '2027-05-01',
+      total: 1000,
+    },
+    {
+      id: 'C2',
+      date: '2026-11-10',
+      provider: 'Droguería Sur',
+      invoiceNumber: 'A-0002',
+      medicineId: 'M2',
+      quantity: 5,
+      purchasePrice: 150,
+      salePrice: 300,
+      expiryDate: '2027-06-01',
+      total: 750,
+    },
+    {
+      id: 'C3',
+      date: '2026-11-11',
+      provider: 'Farmacéutica Norte',
+      invoiceNumber: 'B-0001',
+      medicineId: 'M1',
+      quantity: 4,
+      purchasePrice: 100,
+      salePrice: 200,
+      expiryDate: '2027-07-01',
+      total: 400,
+    },
+  ];
+
+  function montarConCompras() {
+    const contexto = montarConFixtures();
+    contexto.flushServicios();
+    contexto.flushReportes();
+    contexto.compras.emitir(COMPRAS_BACKEND);
+    contexto.fixture.detectChanges();
+    return contexto;
+  }
+
+  const filasCompras = (fixture: { nativeElement: HTMLElement }): HTMLElement[] =>
+    Array.from(
+      fixture.nativeElement.querySelectorAll('[data-testid="reports-compras"] tbody tr'),
+    ) as HTMLElement[];
+
+  it('should render the purchases table and hide the sales table in Informe de Compras', () => {
+    const { httpMock, fixture, pestana } = montarConCompras();
+
+    // Por defecto se ve el informe de ventas, con su tabla.
+    expect(fixture.nativeElement.querySelector('[role="tablist"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="reports-registros"]')).not.toBeNull();
+
+    const tabCompras = pestana('Informe de Compras');
+    expect(tabCompras.getAttribute('aria-selected')).toBe('false');
+    expect(tabCompras.getAttribute('aria-controls')).toBe('panel-compras');
+
+    tabCompras.click();
+    fixture.detectChanges();
+
+    expect(tabCompras.getAttribute('aria-selected')).toBe('true');
+    expect(pestana('Informe de Ventas').getAttribute('aria-selected')).toBe('false');
+
+    const panel = fixture.nativeElement.querySelector('[role="tabpanel"]') as HTMLElement;
+    expect(panel.getAttribute('id')).toBe('panel-compras');
+    expect(panel.getAttribute('aria-labelledby')).toBe('tab-compras');
+
+    expect(fixture.nativeElement.querySelector('[data-testid="reports-registros"]')).toBeNull();
+    const filas = filasCompras(fixture);
+    expect(filas.length).toBe(3);
+    const texto = filas.map((f) => (f.textContent ?? '').replace(/\s+/g, ' ').trim()).join(' | ');
+    expect(texto).toContain('Droguería Sur');
+    expect(texto).toContain('Ibuprofeno 400');
+    expect(texto).toContain('Amoxicilina 500');
+    httpMock.verify();
+  });
+
+  it('should compute the purchases KPIs from the fixtures', () => {
+    const { httpMock, fixture, pestana } = montarConCompras();
+    pestana('Informe de Compras').click();
+    fixture.detectChanges();
+
+    const componente = fixture.componentInstance;
+    expect(componente.totalInvertido()).toBe(2150);
+    expect(componente.lineasCompra()).toBe(3);
+    expect(componente.proveedoresDistintos()).toBe(2);
+    expect(componente.medicamentoMasComprado()?.nombre).toBe('Ibuprofeno 400');
+    expect(componente.medicamentoMasComprado()?.cantidad).toBe(14);
+
+    const total = fixture.nativeElement.querySelector('[data-testid="compras-total"]');
+    const lineas = fixture.nativeElement.querySelector('[data-testid="compras-lineas"]');
+    expect((total?.textContent ?? '').replace(/[^0-9]/g, '')).toBe('2150');
+    expect((lineas?.textContent ?? '').replace(/[^0-9]/g, '')).toBe('3');
+
+    // L5 queda visible junto a los KPIs de compras.
+    const nota = fixture.nativeElement.querySelector('[data-testid="compras-nota"]') as HTMLElement;
+    expect(nota).not.toBeNull();
+    expect(nota.textContent).toContain('líneas de compra');
+    httpMock.verify();
+  });
+
+  it('should export the rows of the active mode with the active filter applied', () => {
+    const { httpMock, fixture, pestana, escribirBusqueda, boton } = montarConCompras();
+    const componente = fixture.componentInstance;
+
+    // Ventas sin filtro: filas generales de la tabla visible.
+    expect(componente.filasExportables().length).toBe(3);
+    expect(Object.keys(componente.filasExportables()[0])).toContain('Fecha de Venta');
+
+    escribirBusqueda('amoxi');
+    (
+      fixture.nativeElement.querySelector('.search-results .result-item') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    boton('VER REPORTE').click();
+    fixture.detectChanges();
+
+    const exportadasVentas = componente.filasExportables();
+    expect(exportadasVentas.length).toBe(1);
+    expect(JSON.stringify(exportadasVentas)).toContain('Amoxicilina 500');
+
+    // Cambiar de modo no arrastra el filtro de ventas.
+    pestana('Informe de Compras').click();
+    fixture.detectChanges();
+
+    expect(componente.reporteGenerado()).toBe(false);
+    const exportadasCompras = componente.filasExportables();
+    expect(exportadasCompras.length).toBe(3);
+    expect(Object.keys(exportadasCompras[0])).toContain('Proveedor');
+    expect(componente.nombreHoja()).toBe('Informe de Compras');
+
+    // El filtro se aplica también al modo compras.
+    escribirBusqueda('ibupro');
+    const sugerencia = (
+      Array.from(
+        fixture.nativeElement.querySelectorAll('.search-results .result-item'),
+      ) as HTMLButtonElement[]
+    ).find((b) => (b.textContent ?? '').includes('Ibuprofeno')) as HTMLButtonElement;
+    sugerencia.click();
+    fixture.detectChanges();
+    boton('VER REPORTE').click();
+    fixture.detectChanges();
+
+    const filtradas = componente.filasExportables();
+    expect(filtradas.length).toBe(2);
+    expect(JSON.stringify(filtradas)).toContain('Ibuprofeno 400');
+    expect(JSON.stringify(filtradas)).not.toContain('Amoxicilina 500');
+    expect(componente.lineasCompra()).toBe(2);
+    httpMock.verify();
+  });
+
+  it('should restore the sales table when switching back to Informe de Ventas', () => {
+    const { httpMock, fixture, pestana } = montarConCompras();
+
+    pestana('Informe de Compras').click();
+    fixture.detectChanges();
+    expect(filasCompras(fixture).length).toBe(3);
+
+    pestana('Informe de Ventas').click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="reports-compras"]')).toBeNull();
+    const filas = fixture.nativeElement.querySelectorAll(
+      '[data-testid="reports-registros"] tbody tr',
+    );
+    expect(filas.length).toBe(3);
+    expect(fixture.componentInstance.modo()).toBe('ventas');
     httpMock.verify();
   });
 });
