@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { SalesService } from '../../services/sales.service';
 import { MedicineService } from '../../services/medicine.service';
 import { Sale } from '../../models/sale';
@@ -6,7 +6,6 @@ import { Medicine } from '../../models/medicine';
 import { Observable } from 'rxjs';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AiService } from '../../services/ai.service';
 
 @Component({
   selector: 'app-sales',
@@ -20,8 +19,6 @@ export class Sales {
   // MIGRACIÓN ANGULAR 21: Inyección moderna con inject()
   private readonly salesService = inject(SalesService);
   private readonly medicineService = inject(MedicineService);
-  private readonly aiService = inject(AiService);
-  private readonly cdr = inject(ChangeDetectorRef);
 
   // MIGRACIÓN ANGULAR 21: Manejo del estado usando Signals
   readonly mensaje = signal<string>('');
@@ -31,17 +28,6 @@ export class Sales {
   readonly cart = signal<any[]>([]);
   readonly selectedMedicine = signal<any | undefined>(undefined);
   readonly discount = signal<number>(0); // 👈 Signal para el descuento aplicado
-
-  // IA CHAT Signals
-  readonly iaQuery = signal<string>('');
-  readonly chatMessages = signal<any[]>([
-    {
-      sender: 'ia',
-      text: ' Hola, soy tu asistente virtual de farmacia. ¿Cómo puedo ayudarte hoy?'
-    }
-  ]);
-  readonly loadingIa = signal<boolean>(false);
-  readonly textIaOpen = signal<boolean>(false);
 
   // 👈 Suma numérica garantizada del subtotal de cada producto en el carrito
   readonly totalCart = computed(() => {
@@ -199,30 +185,6 @@ export class Sales {
           );
         }
       });
-  }
-
-  // CHAT IA
-  async consultarIA(): Promise<void> {
-    const query = this.iaQuery();
-    if (!query.trim()) {
-      this.mostrarAlerta('Por favor escribe un mensaje', true);
-      return;
-    }
-
-    this.chatMessages.update(prev => [...prev, { sender: 'user', text: query }]);
-    this.loadingIa.set(true);
-    this.cdr.detectChanges();
-
-    try {
-      const respuestaIA = await this.aiService.recomendarMedicamento(query, this.medicines());
-      this.chatMessages.update(prev => [...prev, { sender: 'ia', text: respuestaIA }]);
-      this.iaQuery.set('');
-    } catch (e) {
-      this.mostrarAlerta('Ocurrio un error con la IA', true);
-    } finally {
-      this.loadingIa.set(false);
-      this.cdr.detectChanges();
-    }
   }
 
   // ALERTAS

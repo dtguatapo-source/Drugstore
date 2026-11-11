@@ -129,6 +129,15 @@
   font-weight: 700;
 }
 
+.col-center {
+  text-align: center;
+}
+
+.cart-empty {
+  padding: 15px;
+  text-align: center;
+}
+
 .btn-del {
   width: 38px;
   height: 38px;
