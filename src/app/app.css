@@ -125,3 +125,8 @@
 .social img:hover {
   transform: scale(1.2);
 }
+
+/* La sesión se cierra haciendo click en el bloque del usuario */
+.user-section {
+  cursor: pointer;
+}
