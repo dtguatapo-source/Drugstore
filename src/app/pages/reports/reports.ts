@@ -1,12 +1,4 @@
-import {
-  Component,
-  inject,
-  signal,
-  computed,
-  ViewEncapsulation,
-  PLATFORM_ID,
-  DestroyRef
-} from '@angular/core';
+import { Component, inject, signal, computed, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser, DatePipe, DecimalPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -52,8 +44,7 @@ const EMPTY_SUMMARY: ReportSummary = {
   standalone: true,
   imports: [RouterModule, FormsModule, DatePipe, DecimalPipe],
   templateUrl: './reports.html',
-  styleUrls: ['./reports.css'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./reports.css']
 })
 export class Reports {
   private readonly http = inject(HttpClient);

@@ -18,6 +18,18 @@
     </div>
   }
 
+  <!-- INDICADOR VISUAL DE CARGA (no reemplaza al banner de error) -->
+  @if (cargando()) {
+    <div
+      class="card reports-loading"
+      role="status"
+      aria-live="polite"
+      data-testid="reports-cargando"
+    >
+      Cargando estadísticas…
+    </div>
+  }
+
   <!-- TARJETAS KPI DEL BACKEND (/reports/summary) -->
   <section class="kpi-grid" aria-label="Indicadores del negocio" [attr.aria-busy]="cargando()">
     <div class="card kpi-card">
@@ -76,7 +88,7 @@
         <h3>Top Medicamentos Más Vendidos</h3>
       </div>
       @if (topMedicines().length > 0) {
-        <div class="report-table-responsive">
+        <div class="table-wrapper">
           <table class="report-custom-table">
             <caption class="sr-only">Top medicamentos más vendidos por unidades y recaudación</caption>
             <thead>
@@ -167,7 +179,7 @@
       </div>
 
       @if (filteredSales().length > 0) {
-        <div class="report-table-responsive">
+        <div class="table-wrapper">
           <table class="report-custom-table">
             <caption class="sr-only">Detalle de ventas filtradas por medicamento y rango de fechas</caption>
             <thead>

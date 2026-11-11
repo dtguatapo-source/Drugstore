@@ -185,6 +185,33 @@
   gap: 10px;
 }
 
+/* ===== INDICADOR DE CARGA ===== */
+.reports-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  color: var(--text-muted);
+}
+
+.reports-loading::before {
+  content: '';
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: reports-spin 0.8s linear infinite;
+}
+
+@keyframes reports-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ===== TABLAS Y TARJETAS DE REPORTE ===== */
 .report-card-box {
   padding: 0;
@@ -198,11 +225,6 @@
 .report-card-header {
   padding: 16px 24px;
   border-bottom: 1px solid var(--border-color);
-}
-
-.report-custom-table th,
-.report-custom-table td {
-  padding: 12px 20px;
 }
 
 .med-badge {
@@ -233,7 +255,7 @@
   text-align: center;
 }
 
-@media (max-width: 960px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: 1fr; }
   .analytics-grid { grid-template-columns: 1fr; }
 }
