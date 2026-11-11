@@ -49,11 +49,31 @@ export class Sales {
     return this.cart().reduce((acc, item) => acc + (Number(item.subtotal) || 0), 0);
   });
 
+  // 👈 Descuento máximo permitido: la mitad del subtotal, para que la venta nunca quede en $0
+  readonly descuentoMaximo = computed(() => Math.floor(this.totalCart() / 2));
+
+  // 👈 Descuento realmente aplicado: siempre entre 0 y el máximo permitido
+  readonly descuentoAplicado = computed(() => {
+    const valor = Number(this.discount()) || 0;
+    return Math.min(Math.max(valor, 0), this.descuentoMaximo());
+  });
+
   // 👈 Total final restando el descuento aplicado
   readonly totalACobrar = computed(() => {
-    const desc = Number(this.discount()) || 0;
-    return Math.max(0, this.totalCart() - desc);
+    return Math.max(0, this.totalCart() - this.descuentoAplicado());
   });
+
+  // 👈 Valida el descuento apenas se escribe: ni negativo ni mayor al 50% del subtotal
+  setDescuento(valor: unknown): void {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero) || numero < 0) {
+      this.discount.set(0);
+      return;
+    }
+
+    this.discount.set(Math.min(numero, this.descuentoMaximo()));
+  }
 
   sales$: Observable<Sale[]>;
   searchText: string = '';
@@ -172,7 +192,7 @@ export class Sales {
       return;
     }
 
-    const descuentoNum = Number(this.discount()) || 0;
+    const descuentoNum = this.descuentoAplicado();
 
     this.salesService
       .registrarVentaEnBackend(this.customer, this.cart(), descuentoNum)
