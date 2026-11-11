@@ -8,7 +8,7 @@
   width: 100%;
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--border-color);
-  padding: 20px 30px;
+  padding: 12px 24px;
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.04);
 }
 
@@ -29,8 +29,8 @@
 }
 
 .logo-circulo {
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
   background-color: var(--primary-soft);
   border-radius: 50%;
   display: flex;
@@ -39,12 +39,13 @@
 }
 
 .logo-circulo img {
-  width: 20px;
+  width: 17px;
 }
 
 .nombre-sistema {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
   color: var(--text-title);
 }
 
@@ -53,17 +54,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 6px;
 }
 
 /* LINKS */
 .nav-link {
   text-decoration: none;
   color: var(--text-body);
-  font-size: 20px;
-  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 7px 12px;
   border-radius: var(--radius-btn);
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
 /* HOVER */
@@ -75,7 +79,7 @@
 .nav-link.activo {
   background-color: var(--primary);
   color: var(--bg-surface);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ===== USER SECTION ===== */
@@ -88,17 +92,38 @@
 .admin-badge {
   background-color: var(--primary-soft);
   color: var(--primary-hover);
-  padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 20px;
-  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* ===== CONTENT ===== */
 .content {
   flex: 1;
   width: 100%;
-  padding-top: 20px;
+  padding-top: 16px;
+}
+
+/* En pantallas chicas el menú se acomoda en dos líneas en vez de desbordar */
+@media (max-width: 768px) {
+  .main-header {
+    padding: 10px 16px;
+  }
+
+  .navbar {
+    grid-template-columns: auto auto;
+    row-gap: 8px;
+  }
+
+  .LinksNav {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .nombre-sistema {
+    font-size: 14px;
+  }
 }
 
 /* ===== FOOTER ===== */
