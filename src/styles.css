@@ -203,6 +203,36 @@ button {
   text-transform: uppercase;
 }
 
+/* Utilidad de accesibilidad: visible solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Banner de estado (error / reintento) */
+.status-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-btn);
+  background-color: var(--danger-soft);
+  color: var(--danger-hover);
+  font-size: 13px;
+  font-weight: 500;
+}
+
 /* ===== LAYOUT DE FORMULARIOS (compartido) ===== */
 .grid-row {
   display: flex;
@@ -232,7 +262,8 @@ button {
 }
 
 .field label,
-label {
+label,
+legend {
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 700;

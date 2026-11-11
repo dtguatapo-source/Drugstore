@@ -1,105 +1,211 @@
 <div class="reports-main-container">
 
   <div class="reports-header">
-    <h2>Informe de Ventas</h2>
-    <button class="btn btn-primary" (click)="exportarExcel()">Exportar Excel</button>
+    <div>
+      <h2>Informes y Estadísticas del Negocio</h2>
+      <p class="reports-subtitle">Métricas en tiempo real consolidadas desde el servidor</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" routerLink="/dashboard">← Volver al Panel</button>
+      <button class="btn btn-primary" (click)="exportarExcel()">Exportar Excel</button>
+    </div>
   </div>
 
+  @if (errorCarga()) {
+    <div class="status-banner" role="alert">
+      <span>No se pudieron cargar las estadísticas. Verifica que el backend esté en línea.</span>
+      <button class="btn btn-secondary" (click)="cargarEstadisticasBackend()">Reintentar</button>
+    </div>
+  }
+
+  <!-- TARJETAS KPI DEL BACKEND (/reports/summary) -->
+  <section class="kpi-grid" aria-label="Indicadores del negocio" [attr.aria-busy]="cargando()">
+    <div class="card kpi-card">
+      <span class="kpi-label">INGRESOS POR VENTAS</span>
+      <strong class="kpi-value">${{ summary().sales.total | number }}</strong>
+      <small class="kpi-meta">{{ summary().sales.count }} facturas · {{ summary().sales.items }} uds vendidas</small>
+    </div>
+
+    <div class="card kpi-card">
+      <span class="kpi-label">INVERSIÓN EN COMPRAS</span>
+      <strong class="kpi-value kpi-secondary">${{ summary().purchases.total | number }}</strong>
+      <small class="kpi-meta">{{ summary().purchases.count }} compras · {{ summary().purchases.items }} uds ingresadas</small>
+    </div>
+
+    <div class="card kpi-card">
+      <span class="kpi-label">BALANCE COMERCIAL</span>
+      <strong class="kpi-value" [class.kpi-warning]="balance() < 0">{{ balanceLabel() }}</strong>
+      <small class="kpi-meta">Flujo neto ventas vs compras</small>
+    </div>
+
+    <div class="card kpi-card">
+      <span class="kpi-label">STOCK BAJO ALERTA</span>
+      <strong class="kpi-value kpi-warning">{{ summary().lowStock }}</strong>
+      <small class="kpi-meta">Medicamentos con ≤ 10 unidades</small>
+    </div>
+  </section>
+
+  <!-- SECCIÓN ANALÍTICA: VENTAS POR FECHA Y TOP MEDICAMENTOS -->
+  <div class="analytics-grid">
+    <div class="card report-card-box">
+      <div class="report-card-header">
+        <h3>Tendencia de Ventas por Fecha</h3>
+      </div>
+      @if (salesByDate().length > 0) {
+        <ul class="chart-body" aria-label="Ventas por fecha">
+          @for (item of salesByDate(); track $index) {
+            <li class="bar-row">
+              <div class="bar-label">
+                <strong>{{ formatFecha(item.date) }}</strong>
+                <small>{{ item.count }} venta(s)</small>
+              </div>
+              <div class="bar-track" aria-hidden="true">
+                <div class="bar-fill" [style.width.%]="getBarWidth(item.total)"></div>
+              </div>
+              <div class="bar-amount">${{ item.total | number }}</div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="no-data-msg">Sin registros de ventas por fecha.</div>
+      }
+    </div>
+
+    <div class="card report-card-box">
+      <div class="report-card-header">
+        <h3>Top Medicamentos Más Vendidos</h3>
+      </div>
+      @if (topMedicines().length > 0) {
+        <div class="report-table-responsive">
+          <table class="report-custom-table">
+            <caption class="sr-only">Top medicamentos más vendidos por unidades y recaudación</caption>
+            <thead>
+              <tr>
+                <th scope="col">MEDICAMENTO</th>
+                <th scope="col">UNIDADES</th>
+                <th scope="col">RECAUDADO</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (med of topMedicines(); track $index) {
+                <tr>
+                  <td>
+                    <strong>{{ med.name || med.medicineId }}</strong>
+                    <small class="med-lab">{{ med.laboratory || 'General' }}</small>
+                  </td>
+                  <td><span class="med-badge">{{ med.quantity }} uds</span></td>
+                  <td class="price-bold">${{ med.total | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="no-data-msg">Sin medicamentos vendidos aún.</div>
+      }
+    </div>
+  </div>
+
+  <!-- FILTRO ESPECÍFICO POR MEDICAMENTO Y RANGO DE FECHAS -->
   <div class="card report-card-box filters-container">
+    <div class="section-title">CONSULTA DETALLADA POR MEDICAMENTO</div>
     <div class="filter-grid">
 
-      <div class="filter-group">
-        <label>BUSCAR MEDICAMENTO</label>
+      <div class="field">
+        <label for="med-search">BUSCAR MEDICAMENTO</label>
         <div class="search-wrapper">
-          <input type="text" [(ngModel)]="searchText" (input)="onSearch()" placeholder="Nombre del medicamento...">
+          <input
+            id="med-search"
+            type="text"
+            [(ngModel)]="searchText"
+            (input)="onSearch()"
+            placeholder="Nombre del medicamento..."
+            autocomplete="off"
+            aria-describedby="med-search-help"
+          >
+          <span id="med-search-help" class="sr-only">Escribe al menos dos letras para ver sugerencias.</span>
 
-          <!-- MIGRACIÓN ANGULAR 21: Se reemplaza *ngIf por el control flow @if moderno -->
           @if (filteredMedicines().length > 0) {
             <div class="search-results">
-              <!-- MIGRACIÓN ANGULAR 21: Se usa @for con track en lugar de *ngFor -->
               @for (m of filteredMedicines(); track m.id) {
-                <div class="result-item" (click)="selectMed(m)">
-                  <strong>{{m.name}}</strong>
-                  <small>{{m.laboratory}}</small>
-                </div>
+                <button type="button" class="result-item" (click)="selectMed(m)">
+                  <strong>{{ m.name }}</strong>
+                  <small>{{ m.laboratory }}</small>
+                </button>
               }
             </div>
           }
         </div>
       </div>
 
-      <div class="filter-group">
-        <label>RANGO DE FECHAS</label>
+      <fieldset class="field date-fieldset">
+        <legend>RANGO DE FECHAS</legend>
         <div class="date-inputs-row">
           <div class="date-item">
-            <span>Desde</span>
-            <input type="date" [(ngModel)]="fechaDesde">
+            <label for="fecha-desde">Desde</label>
+            <input id="fecha-desde" type="date" [(ngModel)]="fechaDesde">
           </div>
           <div class="date-item">
-            <span>Hasta</span>
-            <input type="date" [(ngModel)]="fechaHasta">
+            <label for="fecha-hasta">Hasta</label>
+            <input id="fecha-hasta" type="date" [(ngModel)]="fechaHasta">
           </div>
         </div>
-      </div>
+      </fieldset>
 
       <div class="filter-actions-column">
-        <button class="btn btn-primary" (click)="generarReporte()">
-          VER REPORTE
-        </button>
-        <button class="btn btn-secondary" (click)="limpiarFiltros()">
-          LIMPIAR
-        </button>
+        <button class="btn btn-primary" (click)="generarReporte()">VER REPORTE</button>
+        <button class="btn btn-secondary" (click)="limpiarFiltros()">LIMPIAR</button>
       </div>
 
     </div>
   </div>
 
-  <!-- MIGRACIÓN ANGULAR 21: Estructura condicional @if moderna -->
   @if (reporteGenerado()) {
-    <div>
-      <div class="card report-card-box">
-        <div class="report-card-header">
-          <h3>Ventas Realizadas</h3>
-        </div>
-
-        @if (filteredSales().length > 0) {
-          <div class="report-table-responsive">
-            <table class="report-custom-table">
-              <thead>
-                <tr>
-                  <th>FECHA</th>
-                  <th>MEDICAMENTO</th>
-                  <th>CANTIDAD</th>
-                  <th>TOTAL</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (sale of filteredSales(); track sale.id) {
-                  <tr>
-                    <td>{{ sale.date | date:'dd/MM/yyyy' }}</td>
-                    <td><span class="med-badge">{{ getMedicineName(sale.medicineId) }}</span></td>
-                    <td>{{ sale.quantity }} uds</td>
-                    <td class="price-bold">${{ sale.total | number }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <div class="no-data-msg">No hay ventas registradas.</div>
-        }
+    <div class="card report-card-box">
+      <div class="report-card-header">
+        <h3>Detalle de Ventas Filtradas</h3>
       </div>
+
+      @if (filteredSales().length > 0) {
+        <div class="report-table-responsive">
+          <table class="report-custom-table">
+            <caption class="sr-only">Detalle de ventas filtradas por medicamento y rango de fechas</caption>
+            <thead>
+              <tr>
+                <th scope="col">FECHA</th>
+                <th scope="col">MEDICAMENTO</th>
+                <th scope="col">CANTIDAD</th>
+                <th scope="col">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sale of filteredSales(); track sale.id) {
+                <tr>
+                  <td>{{ sale.date | date:'dd/MM/yyyy' }}</td>
+                  <td><span class="med-badge">{{ getMedicineName(sale.medicineId) }}</span></td>
+                  <td>{{ sale.quantity }} uds</td>
+                  <td class="price-bold">${{ sale.total | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="no-data-msg">No hay ventas registradas para este filtro.</div>
+      }
     </div>
   }
 
-  <div class="report-footer" style="margin-top: 20px;">
-    <button class="btn btn-secondary" routerLink="/dashboard">Volver al inicio</button>
-  </div>
-
-  <!-- MIGRACIÓN ANGULAR 21: Alerta condicional con @if -->
   @if (mensaje()) {
     <div class="overlay">
-      <div class="alert-box" [class.error]="error()" [class.ok]="!error()">
+      <div
+        class="alert-box"
+        role="alertdialog"
+        aria-modal="true"
+        aria-live="assertive"
+        [class.error]="error()"
+        [class.ok]="!error()"
+      >
         <p>{{ mensaje() }}</p>
         <button (click)="cerrarAlerta()">OK</button>
       </div>
