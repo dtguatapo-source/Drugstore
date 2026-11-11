@@ -128,27 +128,13 @@
       <p class="section-title">Finalizar Venta</p>
 
       <div class="payment-row">
-        <span>Subtotal:</span>
+        <span>Total a Pagar:</span>
         <span class="amount">${{totalCart() | number}}</span>
-      </div>
-
-      <div class="field">
-        <label for="descuento-venta">Descuento aplicado:</label>
-        <input
-          id="descuento-venta"
-          type="number"
-          [ngModel]="discount()"
-          (ngModelChange)="setDescuento($event)"
-          [min]="0"
-          [max]="descuentoMaximo()"
-          placeholder="$ 0"
-        >
-        <span class="form-help">Máximo ${{descuentoMaximo() | number}} (50% del subtotal)</span>
       </div>
 
       <div class="total-big-container">
         <p>TOTAL A COBRAR</p>
-        <h1>${{totalACobrar() | number}}</h1>
+        <h1>${{totalCart() | number}}</h1>
       </div>
 
       <button class="btn btn-primary btn-block btn-complete" (click)="completeSale()">CONFIRMAR Y COBRAR</button>

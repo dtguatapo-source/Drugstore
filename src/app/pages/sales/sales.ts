@@ -29,7 +29,6 @@ export class Sales {
   readonly filteredMedicines = signal<any[]>([]);
   readonly cart = signal<any[]>([]);
   readonly selectedMedicine = signal<any | undefined>(undefined);
-  readonly discount = signal<number>(0); // 👈 Signal para el descuento aplicado
 
   // Estado de la carga (S7): esta pantalla depende de las ventas y de los medicamentos
   private readonly cargandoVentas = toSignal(this.salesService.cargando$, { initialValue: false });
@@ -48,32 +47,6 @@ export class Sales {
   readonly totalCart = computed(() => {
     return this.cart().reduce((acc, item) => acc + (Number(item.subtotal) || 0), 0);
   });
-
-  // 👈 Descuento máximo permitido: la mitad del subtotal, para que la venta nunca quede en $0
-  readonly descuentoMaximo = computed(() => Math.floor(this.totalCart() / 2));
-
-  // 👈 Descuento realmente aplicado: siempre entre 0 y el máximo permitido
-  readonly descuentoAplicado = computed(() => {
-    const valor = Number(this.discount()) || 0;
-    return Math.min(Math.max(valor, 0), this.descuentoMaximo());
-  });
-
-  // 👈 Total final restando el descuento aplicado
-  readonly totalACobrar = computed(() => {
-    return Math.max(0, this.totalCart() - this.descuentoAplicado());
-  });
-
-  // 👈 Valida el descuento apenas se escribe: ni negativo ni mayor al 50% del subtotal
-  setDescuento(valor: unknown): void {
-    const numero = Number(valor);
-
-    if (!Number.isFinite(numero) || numero < 0) {
-      this.discount.set(0);
-      return;
-    }
-
-    this.discount.set(Math.min(numero, this.descuentoMaximo()));
-  }
 
   sales$: Observable<Sale[]>;
   searchText: string = '';
@@ -160,7 +133,7 @@ export class Sales {
       return;
     }
 
-    // 👈 Creamos un nuevo arreglo para que totalCart() y totalACobrar() se actualicen al instante
+    // 👈 Creamos un nuevo arreglo para que totalCart() se actualice al instante
     this.cart.update(prev => [
       ...prev,
       {
@@ -192,17 +165,14 @@ export class Sales {
       return;
     }
 
-    const descuentoNum = this.descuentoAplicado();
-
     this.salesService
-      .registrarVentaEnBackend(this.customer, this.cart(), descuentoNum)
+      .registrarVentaEnBackend(this.customer, this.cart())
       .subscribe({
         next: () => {
           this.medicineService.loadMedicines();
 
           // Limpiar carrito y formulario
           this.cart.set([]);
-          this.discount.set(0);
           this.searchText = '';
           this.filteredMedicines.set([]);
           this.selectedMedicine.set(undefined);
