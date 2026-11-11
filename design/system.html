@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Sistema de diseño — Sistema Droguería Pili</title>
+<style>
+  /* Tokens tal como están en src/styles.css:12-46 */
+  :root {
+    --primary: #0d9488;
+    --primary-hover: #0f766e;
+    --primary-soft: #ccfbf1;
+    --secondary: #0284c7;
+    --bg-main: #f8fafc;
+    --bg-surface: #ffffff;
+    --border-color: #e2e8f0;
+    --text-title: #0f172a;
+    --text-body: #334155;
+    --text-muted: #64748b;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --danger-soft: #fee2e2;
+    --success: #059669;
+    --warning: #b45309;
+    --warning-soft: #fef3c7;
+    --radius-btn: 8px;
+    --radius-card: 12px;
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --space-page: 30px;
+    --space-card: 24px;
+    --space-field: 16px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { width: 1440px; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-body);
+    background-color: var(--bg-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: var(--space-page);
+  }
+
+  h1, h2, h3 { color: var(--text-title); line-height: 1.25; }
+  h1 { font-size: 24px; font-weight: 800; }
+  h2 { font-size: 22px; font-weight: 700; }
+  h3 { font-size: 16px; font-weight: 700; }
+  p { font-size: 14px; color: var(--text-body); }
+  a { color: var(--secondary); }
+  small { font-size: 12px; color: var(--text-muted); }
+  button { font-family: inherit; }
+
+  .board-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .board-head p { color: var(--text-muted); }
+  .board-head code {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-body);
+  }
+
+  .card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-card);
+  }
+
+  .section-title {
+    display: block;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .section-note { margin: 4px 0 0; color: var(--text-muted); font-size: 12px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+      opacity 0.15s ease;
+  }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary { background-color: var(--primary); border-color: var(--primary); color: #ffffff; }
+  .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn-secondary { background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-body); }
+  .btn-secondary:hover:not(:disabled) { background-color: var(--bg-main); color: var(--text-title); }
+  .btn-danger { background-color: var(--danger); border-color: var(--danger); color: #ffffff; }
+  .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); border-color: var(--danger-hover); }
+  .btn-block { width: 100%; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .tab[aria-selected='true'] { background-color: var(--primary); border-color: var(--primary); color: #ffffff; }
+  .tab[aria-selected='false'] { background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-body); }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label, label, legend {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  input:not([type='checkbox']):not([type='radio']) {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-btn);
+    background-color: var(--bg-surface);
+    color: var(--text-body);
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  input:not([type='checkbox']):not([type='radio']):focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgb(13 148 136 / 0.15);
+  }
+  input[readonly] { background-color: var(--bg-main); color: var(--text-muted); }
+  input::placeholder { color: var(--text-muted); opacity: 0.8; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-body);
+    font-size: 14px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  tbody tr:hover { background-color: var(--bg-main); }
+  .table-wrapper { width: 100%; overflow-x: auto; border-radius: var(--radius-btn); }
+  .price-bold { color: var(--text-title); font-weight: 700; }
+
+  .status-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-btn);
+    background-color: var(--danger-soft);
+    color: var(--danger-hover);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .reports-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    color: var(--text-muted);
+  }
+  .reports-loading::before {
+    content: '';
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: reports-spin 0.8s linear infinite;
+  }
+  @keyframes reports-spin { to { transform: rotate(360deg); } }
+  .cargando { margin: 0; color: var(--text-muted); font-size: 13px; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ===== Retícula del tablero ===== */
+  .board { display: grid; gap: 24px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .swatch { display: flex; flex-direction: column; gap: 4px; }
+  .swatch-chip {
+    height: 56px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-btn);
+  }
+  .swatch-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-title);
+    font-family: inherit;
+  }
+  .swatch-hex { font-size: 12px; color: var(--text-muted); }
+  .swatch-use { font-size: 11px; color: var(--text-muted); }
+
+  .type-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .type-row:last-child { border-bottom: 0; }
+  .type-spec {
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .space-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+  .space-bar { height: 12px; border-radius: var(--radius-btn); background-color: var(--primary-soft); border: 1px solid var(--primary); }
+  .space-meta { font-size: 12px; color: var(--text-muted); min-width: 260px; }
+
+  .radius-demo { display: flex; gap: 20px; }
+  .radius-box {
+    width: 110px;
+    height: 64px;
+    background-color: var(--primary-soft);
+    border: 1px solid var(--primary);
+  }
+
+  .shadow-demo { display: flex; gap: 20px; }
+  .shadow-box {
+    width: 180px;
+    height: 72px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px;
+  }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-header { box-shadow: 0 2px 6px rgb(0 0 0 / 0.04); }
+  .shadow-popover { box-shadow: 0 10px 25px rgb(0 0 0 / 0.12); }
+
+  .btn-stack { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .component-label {
+    margin: 18px 0 8px;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .component-label:first-of-type { margin-top: 0; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .board-footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .board-footer code { font-family: inherit; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="board-head">
+  <div>
+    <h1>Sistema de diseño — Sistema Droguería Pili</h1>
+    <p>Tokens y componentes vigentes, copiados de <code>src/styles.css</code> · shell en <code>src/app/app.css</code></p>
+  </div>
+  <p><code>design/system.md</code></p>
+</div>
+
+<div class="board">
+
+  <!-- ============ COLORES ============ -->
+  <section class="card" aria-labelledby="t-colores">
+    <span class="section-title" id="t-colores">COLORES · 16 TOKENS · src/styles.css:12-36</span>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--primary)"></div>
+        <span class="swatch-name">--primary</span><span class="swatch-hex">#0d9488</span>
+        <span class="swatch-use">marca, botón primario, foco, pestaña activa</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--primary-hover)"></div>
+        <span class="swatch-name">--primary-hover</span><span class="swatch-hex">#0f766e</span>
+        <span class="swatch-use">hover primario, texto sobre primary-soft</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--primary-soft)"></div>
+        <span class="swatch-name">--primary-soft</span><span class="swatch-hex">#ccfbf1</span>
+        <span class="swatch-use">badges, logo, subtotal</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--secondary)"></div>
+        <span class="swatch-name">--secondary</span><span class="swatch-hex">#0284c7</span>
+        <span class="swatch-use">enlaces, KPI secundario, degradado</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--bg-main)"></div>
+        <span class="swatch-name">--bg-main</span><span class="swatch-hex">#f8fafc</span>
+        <span class="swatch-use">fondo de app, th, hover de fila</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--bg-surface)"></div>
+        <span class="swatch-name">--bg-surface</span><span class="swatch-hex">#ffffff</span>
+        <span class="swatch-use">tarjetas, inputs, header</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--border-color)"></div>
+        <span class="swatch-name">--border-color</span><span class="swatch-hex">#e2e8f0</span>
+        <span class="swatch-use">bordes y separadores</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--text-title)"></div>
+        <span class="swatch-name">--text-title</span><span class="swatch-hex">#0f172a</span>
+        <span class="swatch-use">títulos y cifras destacadas</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--text-body)"></div>
+        <span class="swatch-name">--text-body</span><span class="swatch-hex">#334155</span>
+        <span class="swatch-use">texto por defecto</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--text-muted)"></div>
+        <span class="swatch-name">--text-muted</span><span class="swatch-hex">#64748b</span>
+        <span class="swatch-use">labels, subtítulos, th</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--danger)"></div>
+        <span class="swatch-name">--danger</span><span class="swatch-hex">#dc2626</span>
+        <span class="swatch-use">error, botón de borrar</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--danger-hover)"></div>
+        <span class="swatch-name">--danger-hover</span><span class="swatch-hex">#b91c1c</span>
+        <span class="swatch-use">hover de peligro, texto del banner</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--danger-soft)"></div>
+        <span class="swatch-name">--danger-soft</span><span class="swatch-hex">#fee2e2</span>
+        <span class="swatch-use">fondo de status-banner y alerta</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--success)"></div>
+        <span class="swatch-name">--success</span><span class="swatch-hex">#059669</span>
+        <span class="swatch-use">borde de alert-box.ok</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--warning)"></div>
+        <span class="swatch-name">--warning</span><span class="swatch-hex">#b45309</span>
+        <span class="swatch-use">declarado, sin consumidores</span>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background-color: var(--warning-soft)"></div>
+        <span class="swatch-name">--warning-soft</span><span class="swatch-hex">#fef3c7</span>
+        <span class="swatch-use">declarado, sin consumidores</span>
+      </div>
+    </div>
+    <p class="section-note">Literal fuera de token: <code>#ffffff</code> como color de texto de los botones
+      primario y de peligro (src/styles.css:151, 173, 196, 623) y el anillo de foco
+      <code>rgb(13 148 136 / 0.15)</code> (src/styles.css:338).</p>
+  </section>
+
+  <!-- ============ TIPOGRAFÍA ============ -->
+  <section class="card" aria-labelledby="t-tipo">
+    <span class="section-title" id="t-tipo">TIPOGRAFÍA · INTER CON FALLBACK DE SISTEMA · src/styles.css:66-111</span>
+    <div class="type-row">
+      <span class="type-spec">h1 · 24 / 800<br>line-height 1.25</span>
+      <h1>Informes y Estadísticas del Negocio</h1>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">h2 · 22 / 700</span>
+      <h2>Registro de Ventas</h2>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">h3 · 16 / 700</span>
+      <h3>Tendencia de Ventas por Fecha</h3>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">p · 14 / 400 / --text-body</span>
+      <p>Métricas en tiempo real consolidadas desde el servidor</p>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">small · 12 / --text-muted</span>
+      <small>Resumen de los últimos 10 movimientos registrados.</small>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">label · 12 / 700 / uppercase<br>letter-spacing .3px</span>
+      <label>Máximo $4,200 (50% del subtotal)</label>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">.section-title · 12 / 700 / uppercase<br>letter-spacing .5px</span>
+      <span class="section-title" style="margin-bottom: 0">CONSULTA DETALLADA POR MEDICAMENTO</span>
+    </div>
+    <div class="type-row">
+      <span class="type-spec">.kpi-label · 11 / 700<br>.kpi-value · 28 / 800</span>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em">INGRESOS POR VENTAS</span>
+        <strong style="font-size: 28px; font-weight: 800; color: var(--primary)">$4,386,500</strong>
+        <span style="font-size: 12px; color: var(--text-muted)">128 facturas · 412 uds vendidas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ESPACIO, RADIO, SOMBRA ============ -->
+  <div class="row-2">
+    <section class="card" aria-labelledby="t-espacio">
+      <span class="section-title" id="t-espacio">ESPACIADO · src/styles.css:44-46</span>
+      <div class="space-row">
+        <span class="space-meta">--space-page · 30px</span>
+        <div class="space-bar" style="width: 30px"></div>
+      </div>
+      <div class="space-row">
+        <span class="space-meta">--space-card · 24px</span>
+        <div class="space-bar" style="width: 24px"></div>
+      </div>
+      <div class="space-row">
+        <span class="space-meta">--space-field · 16px (sin consumidores)</span>
+        <div class="space-bar" style="width: 16px"></div>
+      </div>
+      <p class="section-note">Sin token: 8 / 12 / 15 / 20 / 25 px se escriben literales en el CSS
+        (.tabs gap 8, .status-banner gap 12, .grid-row gap 20, .top-grid gap 25).</p>
+
+      <span class="section-title" id="t-radio" style="margin-top: 20px">RADIO · src/styles.css:39-40</span>
+      <div class="radius-demo">
+        <div>
+          <div class="radius-box" style="border-radius: var(--radius-btn)"></div>
+          <span class="swatch-hex">--radius-btn 8px</span>
+        </div>
+        <div>
+          <div class="radius-box" style="border-radius: var(--radius-card)"></div>
+          <span class="swatch-hex">--radius-card 12px</span>
+        </div>
+        <div>
+          <div class="radius-box" style="border-radius: 999px"></div>
+          <span class="swatch-hex">999px literal (pastillas)</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="t-sombra">
+      <span class="section-title" id="t-sombra">SOMBRA · src/styles.css:41</span>
+      <div class="shadow-demo">
+        <div class="shadow-box shadow-card">--shadow-card<br>.card</div>
+        <div class="shadow-box shadow-header">0 2px 6px / .04<br>header</div>
+        <div class="shadow-box shadow-popover">0 10px 25px / .12<br>.search-results</div>
+      </div>
+      <p class="section-note">Sólo <code>--shadow-card</code> es token. Las demás sombras
+        (header, .search-results, .alert-box, .auth-card, footer) son literales por componente.</p>
+
+      <span class="section-title" style="margin-top: 20px">MOVIMIENTO</span>
+      <p style="font-size: 13px">Transiciones de 0.15s en botones e inputs; spinner de carga de 0.8s
+        infinito. Con <code>prefers-reduced-motion: reduce</code> todo baja a 0.01ms
+        (src/styles.css:753-760).</p>
+    </section>
+  </div>
+
+  <!-- ============ COMPONENTES ============ -->
+  <section class="card" aria-labelledby="t-comp">
+    <span class="section-title" id="t-comp">COMPONENTES · src/styles.css y páginas</span>
+
+    <div class="grid-2">
+      <div>
+        <p class="component-label">.btn · .btn-primary / .btn-secondary / .btn-danger / :disabled</p>
+        <div class="btn-stack">
+          <button class="btn btn-primary" type="button">Exportar Excel</button>
+          <button class="btn btn-secondary" type="button">← Volver al Panel</button>
+          <button class="btn btn-danger" type="button">Eliminar</button>
+          <button class="btn btn-primary" type="button" disabled>VER REPORTE</button>
+        </div>
+
+        <p class="component-label">.btn-block · 100%</p>
+        <button class="btn btn-primary btn-block" type="button">+ AGREGAR A LA VENTA</button>
+
+        <p class="component-label">.tabs / .tab · aria-selected true y false</p>
+        <div class="tabs" role="tablist" aria-label="Tipo de informe">
+          <button class="btn tab" type="button" role="tab" aria-selected="true">Informe de Ventas</button>
+          <button class="btn tab" type="button" role="tab" aria-selected="false">Informe de Compras</button>
+        </div>
+
+        <p class="component-label">.field con input, input[readonly] y foco</p>
+        <div class="field" style="margin-bottom: 14px">
+          <label for="demo-nombre">Nombre del Cliente</label>
+          <input id="demo-nombre" type="text" placeholder="Seleccionar Cliente o 'Cliente General'">
+        </div>
+        <div class="field" style="margin-bottom: 14px">
+          <label for="demo-precio">Precio Unitario</label>
+          <input id="demo-precio" type="text" readonly value="450">
+        </div>
+        <div class="field">
+          <label for="demo-desc">Descuento aplicado:</label>
+          <input id="demo-desc" type="number" min="0" max="4200" value="1200" style="border-color: var(--primary); box-shadow: 0 0 0 3px rgb(13 148 136 / 0.15)">
+          <span class="form-help" style="font-size: 13px; color: var(--text-muted)">Máximo $4,200 (50% del subtotal)</span>
+        </div>
+      </div>
+
+      <div>
+        <p class="component-label">.status-banner con Reintentar</p>
+        <div class="status-banner" role="alert">
+          <span>No se pudo conectar con el servidor. Verifique que el backend esté en ejecución e intente de nuevo.</span>
+          <button class="btn btn-secondary" type="button" style="width: auto">Reintentar</button>
+        </div>
+
+        <p class="component-label">Línea de carga · .reports-loading y .cargando</p>
+        <div class="reports-loading" style="border: 1px solid var(--border-color); border-radius: var(--radius-card); background-color: var(--bg-surface); margin-bottom: 12px">
+          Cargando estadísticas…
+        </div>
+        <p class="cargando" role="status" style="margin-bottom: 16px">Cargando información…</p>
+
+        <p class="component-label">Tabla con .table-wrapper, th, td y .price-bold</p>
+        <div class="table-wrapper">
+          <table>
+            <caption class="sr-only">Ejemplo de tabla con medicamento, unidades y recaudado</caption>
+            <thead>
+              <tr>
+                <th scope="col">MEDICAMENTO</th>
+                <th scope="col">UNIDADES</th>
+                <th scope="col">RECAUDADO</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong style="color: var(--text-title)">Acetaminofén 500 mg</strong>
+                  <small style="display: block; font-size: 11px">Genfar</small>
+                </td>
+                <td><span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background-color: var(--primary-soft); color: var(--primary-hover); font-size: 12px; font-weight: 600">96 uds</span></td>
+                <td class="price-bold">$43,200</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong style="color: var(--text-title)">Ibuprofeno 400 mg</strong>
+                  <small style="display: block; font-size: 11px">Lafrancol</small>
+                </td>
+                <td><span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background-color: var(--primary-soft); color: var(--primary-hover); font-size: 12px; font-weight: 600">74 uds</span></td>
+                <td class="price-bold">$44,400</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong style="color: var(--text-title)">Amoxicilina 500 mg</strong>
+                  <small style="display: block; font-size: 11px">Tecnoquímicas</small>
+                </td>
+                <td><span style="display: inline-block; padding: 4px 10px; border-radius: 999px; background-color: var(--primary-soft); color: var(--primary-hover); font-size: 12px; font-weight: 600">51 uds</span></td>
+                <td class="price-bold">$63,750</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="component-label">.card sobre tabla de reportes: .report-card-box (padding 0)</p>
+        <div class="card" style="padding: 0; overflow: hidden">
+          <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color)">
+            <h3>Registros Recientes</h3>
+            <p class="section-note">Resumen de los últimos 10 movimientos registrados.</p>
+          </div>
+          <div style="padding: 16px 24px; font-size: 13px; color: var(--text-muted)">El cuerpo de la tabla
+            continúa bajo la cabecera, como en la pantalla real.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="board-footer">
+  <span>Tokens y componentes tal como están en el repositorio; no se agregaron valores nuevos.</span>
+  <span><code>1440 px</code> · <code>src/styles.css</code> · <code>src/app/app.css</code> · <code>src/app/pages/reports/reports.css</code></span>
+</div>
+</body>
+</html>
