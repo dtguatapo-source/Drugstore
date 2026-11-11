@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, PLATFORM_ID, DestroyRef } from '@angular/core';
-import { isPlatformBrowser, DatePipe, DecimalPipe } from '@angular/common';
+import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -30,8 +30,33 @@ export interface TopMedicineItem {
   total: number;
 }
 
+/** Fila de la tabla general / filtrada de movimientos. */
+export interface MovimientoRow {
+  id: number | string;
+  dia: string;
+  medicamento: string;
+  cantidad: number;
+  total: number;
+}
+
+/** Movimiento mínimo necesario para filtrar y agrupar (sirve para ventas y, más adelante, compras). */
+export interface MovimientoFiltrable {
+  medicineId: string;
+  quantity: number;
+  total: number;
+  date: Date | string;
+}
+
+/** Criterio de filtro del reporte (medicamento y/o rango de días ISO). */
+export interface CriterioMovimientos {
+  medicineId?: string;
+  desde?: string;
+  hasta?: string;
+}
+
 const API_URL = 'http://localhost:3000/reports';
 const REQUEST_TIMEOUT = 8000;
+const RECIENTES_MAX = 10;
 
 const EMPTY_SUMMARY: ReportSummary = {
   sales: { total: 0, count: 0, items: 0 },
@@ -42,7 +67,7 @@ const EMPTY_SUMMARY: ReportSummary = {
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [RouterModule, FormsModule, DatePipe, DecimalPipe],
+  imports: [RouterModule, FormsModule, DecimalPipe],
   templateUrl: './reports.html',
   styleUrls: ['./reports.css']
 })
@@ -61,6 +86,9 @@ export class Reports {
   readonly filteredSales = signal<Sale[]>([]);
   readonly reporteGenerado = signal<boolean>(false);
 
+  /** Historial de ventas del servicio, usado para la tabla y el agregado en el navegador. */
+  readonly sales = signal<Sale[]>([]);
+
   readonly summary = signal<ReportSummary>(EMPTY_SUMMARY);
   readonly salesByDate = signal<SalesByDateItem[]>([]);
   readonly topMedicines = signal<TopMedicineItem[]>([]);
@@ -75,10 +103,47 @@ export class Reports {
   });
 
   readonly maxDailySale = computed(() => {
-    const items = this.salesByDate();
+    const items = this.chartData();
     if (!items.length) return 1;
     return Math.max(...items.map((i) => i.total), 1);
   });
+
+  /**
+   * Datos de la gráfica: la vista general usa /reports/sales-by-date y, con filtro
+   * activo, se agregan las ventas filtradas por día calendario en el navegador.
+   */
+  readonly chartData = computed<SalesByDateItem[]>(() =>
+    this.reporteGenerado() ? this.agruparPorDia(this.filteredSales()) : this.salesByDate()
+  );
+
+  /** Últimos movimientos de toda la droguería (vista general, sin filtro). */
+  readonly filasGenerales = computed<MovimientoRow[]>(() =>
+    this.ultimosMovimientos(this.sales()).map((venta) => this.filaDeVenta(venta))
+  );
+
+  /** Filas de la única tabla: general cuando no hay filtro, filtradas cuando lo hay. */
+  readonly filasVisibles = computed<MovimientoRow[]>(() =>
+    this.reporteGenerado()
+      ? this.ordenarPorFechaDesc(this.filteredSales()).map((venta) => this.filaDeVenta(venta))
+      : this.filasGenerales()
+  );
+
+  readonly tituloTabla = computed(() =>
+    this.reporteGenerado() ? 'Detalle de Ventas Filtradas' : 'Registros Recientes'
+  );
+
+  readonly notaTabla = computed(() => {
+    const cantidad = this.filasVisibles().length;
+    return this.reporteGenerado()
+      ? `${cantidad} movimiento(s) para el filtro aplicado.`
+      : `Resumen de los últimos ${RECIENTES_MAX} movimientos registrados.`;
+  });
+
+  readonly mensajeVacio = computed(() =>
+    this.reporteGenerado()
+      ? 'No hay ventas registradas para este filtro.'
+      : 'Todavía no hay ventas registradas.'
+  );
 
   searchText = '';
   fechaDesde = '';
@@ -89,6 +154,7 @@ export class Reports {
 
   constructor() {
     this.medicineService.medicines$.subscribe((data) => this.medicines.set(data));
+    this.salesService.sales$.subscribe((data) => this.sales.set(data));
 
     if (isPlatformBrowser(this.platformId)) {
       this.cargarEstadisticasBackend();
@@ -131,6 +197,11 @@ export class Reports {
     return Math.max(8, Math.round((total / this.maxDailySale()) * 100));
   }
 
+  /** El rango es inválido cuando "Desde" es posterior a "Hasta". */
+  rangoInvalido(): boolean {
+    return !!this.fechaDesde && !!this.fechaHasta && this.fechaDesde > this.fechaHasta;
+  }
+
   /**
    * Formatea una fecha ISO (YYYY-MM-DD) sin pasar por Date, para no
    * desplazar el día en zonas horarias negativas (UTC-3).
@@ -152,7 +223,7 @@ export class Reports {
   }
 
   exportarExcel(): void {
-    const tieneFiltro = this.filteredSales().length > 0;
+    const tieneFiltro = this.reporteGenerado();
     const filas = tieneFiltro
       ? this.filteredSales().map((s) => ({
           'Fecha de Venta': new Date(s.date).toLocaleDateString(),
@@ -202,37 +273,118 @@ export class Reports {
     return med ? med.name : 'Producto';
   }
 
+  // ===== Helpers puros de agregación (reutilizables para el modo Compras) =====
+
+  /**
+   * Día calendario en ISO local (YYYY-MM-DD). Nunca construye un Date a partir
+   * de un string YYYY-MM-DD, para no desplazar el día en zonas horarias negativas.
+   */
+  diaISO(fecha: Date | string): string {
+    if (typeof fecha === 'string') {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(fecha);
+      if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+      const parseada = new Date(fecha);
+      return Number.isNaN(parseada.getTime()) ? '' : this.diaISO(parseada);
+    }
+
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  }
+
+  /** Agrupa movimientos por día calendario, con el total y la cantidad del día. */
+  agruparPorDia(movimientos: MovimientoFiltrable[]): SalesByDateItem[] {
+    const acumulado = new Map<string, { total: number; count: number }>();
+
+    (movimientos ?? []).forEach((movimiento) => {
+      const dia = this.diaISO(movimiento.date);
+      if (!dia) return;
+      const actual = acumulado.get(dia) ?? { total: 0, count: 0 };
+      actual.total += Number(movimiento.total) || 0;
+      actual.count += 1;
+      acumulado.set(dia, actual);
+    });
+
+    return Array.from(acumulado.entries())
+      .map(([date, valor]) => ({ date, total: valor.total, count: valor.count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  /**
+   * Filtra movimientos por medicamento y/o rango de días ISO (extremos incluidos).
+   * Sin criterio devuelve la lista completa, así que sirve también para la vista general.
+   */
+  filtrarMovimientos<T extends MovimientoFiltrable>(
+    movimientos: T[],
+    criterio: CriterioMovimientos = {}
+  ): T[] {
+    const { medicineId, desde, hasta } = criterio;
+
+    return (movimientos ?? []).filter((movimiento) => {
+      if (medicineId && movimiento.medicineId !== medicineId) return false;
+      const dia = this.diaISO(movimiento.date);
+      if (desde && dia < desde) return false;
+      if (hasta && dia > hasta) return false;
+      return true;
+    });
+  }
+
+  /** Movimientos más recientes primero, acotados a un máximo. */
+  ultimosMovimientos<T extends MovimientoFiltrable>(
+    movimientos: T[],
+    maximo: number = RECIENTES_MAX
+  ): T[] {
+    return this.ordenarPorFechaDesc(movimientos).slice(0, maximo);
+  }
+
+  /** Orden descendente por fecha, sin perder los movimientos del mismo día. */
+  ordenarPorFechaDesc<T extends MovimientoFiltrable>(movimientos: T[]): T[] {
+    return [...(movimientos ?? [])].sort((a, b) => {
+      const diaA = this.diaISO(a.date);
+      const diaB = this.diaISO(b.date);
+      if (diaA !== diaB) return diaB.localeCompare(diaA);
+      return 0;
+    });
+  }
+
+  /** Convierte una venta del historial en una fila mostrable de la tabla. */
+  filaDeVenta(venta: Sale): MovimientoRow {
+    return {
+      id: venta.id,
+      dia: this.diaISO(venta.date),
+      medicamento: this.getMedicineName(venta.medicineId),
+      cantidad: Number(venta.quantity) || 0,
+      total: Number(venta.total) || 0
+    };
+  }
+
   generarReporte(): void {
     const med = this.selectedMedicine();
-    if (!med) {
-      this.mostrarAlerta('Debes seleccionar un medicamento', true);
+    const desde = this.fechaDesde;
+    const hasta = this.fechaHasta;
+
+    // Se puede filtrar solo por medicamento, solo por rango de fechas o por ambos.
+    if (!med && !desde && !hasta) {
+      this.mostrarAlerta('Selecciona un medicamento o un rango de fechas', true);
       return;
     }
 
-    if ((this.fechaDesde && !this.fechaHasta) || (!this.fechaDesde && this.fechaHasta)) {
+    if ((desde && !hasta) || (!desde && hasta)) {
       this.mostrarAlerta('Debes seleccionar ambas fechas', true);
       return;
     }
 
-    if (this.fechaDesde && this.fechaHasta) {
-      const desde = new Date(this.fechaDesde);
-      const hasta = new Date(this.fechaHasta);
-      if (desde > hasta) {
-        this.mostrarAlerta('La fecha "Desde" no puede ser mayor que "Hasta"', true);
-        return;
-      }
+    if (this.rangoInvalido()) {
+      this.mostrarAlerta('La fecha "Desde" no puede ser mayor que "Hasta"', true);
+      return;
     }
 
-    const desde = this.fechaDesde ? new Date(this.fechaDesde + 'T00:00:00') : null;
-    const hasta = this.fechaHasta ? new Date(this.fechaHasta + 'T23:59:59') : null;
-    const idSeleccionado = med.id;
-
     this.salesService.sales$.pipe(take(1)).subscribe((allSales) => {
-      const resultados = allSales.filter((s) => {
-        const coincideMed = s.medicineId === idSeleccionado;
-        const fechaVenta = new Date(s.date);
-        const coincideFecha = (!desde || fechaVenta >= desde) && (!hasta || fechaVenta <= hasta);
-        return coincideMed && coincideFecha;
+      const resultados = this.filtrarMovimientos(allSales, {
+        medicineId: med?.id,
+        desde,
+        hasta
       });
 
       this.filteredSales.set(resultados);

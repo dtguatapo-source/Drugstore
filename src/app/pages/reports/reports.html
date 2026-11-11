@@ -62,10 +62,13 @@
     <div class="card report-card-box">
       <div class="report-card-header">
         <h3>Tendencia de Ventas por Fecha</h3>
+        @if (reporteGenerado()) {
+          <p class="section-note">Tendencia del filtro aplicado (agregado por día).</p>
+        }
       </div>
-      @if (salesByDate().length > 0) {
+      @if (chartData().length > 0) {
         <ul class="chart-body" aria-label="Ventas por fecha">
-          @for (item of salesByDate(); track $index) {
+          @for (item of chartData(); track $index) {
             <li class="bar-row">
               <div class="bar-label">
                 <strong>{{ formatFecha(item.date) }}</strong>
@@ -165,48 +168,50 @@
       </fieldset>
 
       <div class="filter-actions-column">
-        <button class="btn btn-primary" (click)="generarReporte()">VER REPORTE</button>
+        <button class="btn btn-primary" (click)="generarReporte()" [disabled]="rangoInvalido()">VER REPORTE</button>
         <button class="btn btn-secondary" (click)="limpiarFiltros()">LIMPIAR</button>
       </div>
 
     </div>
   </div>
 
-  @if (reporteGenerado()) {
-    <div class="card report-card-box">
-      <div class="report-card-header">
-        <h3>Detalle de Ventas Filtradas</h3>
-      </div>
-
-      @if (filteredSales().length > 0) {
-        <div class="table-wrapper">
-          <table class="report-custom-table">
-            <caption class="sr-only">Detalle de ventas filtradas por medicamento y rango de fechas</caption>
-            <thead>
-              <tr>
-                <th scope="col">FECHA</th>
-                <th scope="col">MEDICAMENTO</th>
-                <th scope="col">CANTIDAD</th>
-                <th scope="col">TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (sale of filteredSales(); track sale.id) {
-                <tr>
-                  <td>{{ sale.date | date:'dd/MM/yyyy' }}</td>
-                  <td><span class="med-badge">{{ getMedicineName(sale.medicineId) }}</span></td>
-                  <td>{{ sale.quantity }} uds</td>
-                  <td class="price-bold">${{ sale.total | number }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <div class="no-data-msg">No hay ventas registradas para este filtro.</div>
-      }
+  <!-- TABLA DE MOVIMIENTOS: vista general de registros recientes o detalle filtrado -->
+  <div class="card report-card-box" data-testid="reports-registros-card">
+    <div class="report-card-header">
+      <h3>{{ tituloTabla() }}</h3>
+      <p class="section-note">{{ notaTabla() }}</p>
     </div>
-  }
+
+    @if (filasVisibles().length > 0) {
+      <div class="table-wrapper">
+        <table class="report-custom-table" data-testid="reports-registros">
+          <caption class="sr-only">
+            Detalle de ventas por fecha, medicamento, cantidad y total
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">FECHA</th>
+              <th scope="col">MEDICAMENTO</th>
+              <th scope="col">CANTIDAD</th>
+              <th scope="col">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of filasVisibles(); track fila.id) {
+              <tr>
+                <td>{{ formatFecha(fila.dia) }}</td>
+                <td><span class="med-badge">{{ fila.medicamento }}</span></td>
+                <td>{{ fila.cantidad }} uds</td>
+                <td class="price-bold">${{ fila.total | number }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="no-data-msg" data-testid="reports-registros-vacio">{{ mensajeVacio() }}</div>
+    }
+  </div>
 
   @if (mensaje()) {
     <div class="overlay">

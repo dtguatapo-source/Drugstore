@@ -203,6 +203,13 @@ button {
   text-transform: uppercase;
 }
 
+/* Nota breve bajo un titulo de seccion (reutilizable en cualquier pantalla) */
+.section-note {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 /* Utilidad de accesibilidad: visible solo para lectores de pantalla */
 .sr-only {
   position: absolute;
