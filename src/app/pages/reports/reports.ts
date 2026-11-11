@@ -127,10 +127,8 @@ export class Reports {
 
   readonly balance = computed(() => this.summary().sales.total - this.summary().purchases.total);
 
-  readonly balanceLabel = computed(() => {
-    const valor = this.balance();
-    return `${valor < 0 ? '-' : ''}$${Math.abs(valor).toLocaleString('es-AR')}`;
-  });
+  /** Valor absoluto del balance: el signo se dibuja aparte para no escribir "$-". */
+  readonly balanceAbsoluto = computed(() => Math.abs(this.balance()));
 
   readonly maxDailySale = computed(() => {
     const items = this.chartData();

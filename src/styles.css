@@ -235,7 +235,7 @@ button {
 
 /* Nota breve bajo un titulo de seccion (reutilizable en cualquier pantalla) */
 .section-note {
-  margin: 4px 0 0;
+  margin: 4px 0 16px;
   color: var(--text-muted);
   font-size: 12px;
 }

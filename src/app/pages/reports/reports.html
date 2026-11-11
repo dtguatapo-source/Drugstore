@@ -131,7 +131,9 @@
 
         <div class="card kpi-card">
           <span class="kpi-label">BALANCE COMERCIAL</span>
-          <strong class="kpi-value" [class.kpi-warning]="balance() < 0">{{ balanceLabel() }}</strong>
+          <strong class="kpi-value" [class.kpi-warning]="balance() < 0"
+            >{{ balance() < 0 ? '-' : '' }}${{ balanceAbsoluto() | number }}</strong
+          >
           <small class="kpi-meta">Flujo neto ventas vs compras</small>
         </div>
 
