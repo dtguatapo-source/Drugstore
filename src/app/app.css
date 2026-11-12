@@ -151,7 +151,17 @@
   transform: scale(1.2);
 }
 
-/* La sesión se cierra haciendo click en el bloque del usuario */
+/* La sesión se cierra con un botón real: sin el aspecto nativo del navegador */
 .user-section {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
   cursor: pointer;
+  border-radius: var(--radius-btn);
+}
+
+.user-section:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
