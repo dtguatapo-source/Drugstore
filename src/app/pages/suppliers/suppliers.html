@@ -45,8 +45,9 @@
                 <button type="button" class="btn btn-secondary" (click)="abrirEditar(proveedor)">
                   Editar
                 </button>
-                <button type="button" class="btn btn-danger" (click)="eliminar(proveedor)">
-                  Eliminar
+                <button type="button" class="btn btn-danger" (click)="eliminar(proveedor)"
+                  [disabled]="borrando() === proveedor.id">
+                  {{ borrando() === proveedor.id ? 'Eliminando...' : 'Eliminar' }}
                 </button>
               </td>
             </tr>

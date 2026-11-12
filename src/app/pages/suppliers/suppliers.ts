@@ -21,6 +21,7 @@ export class Suppliers {
   readonly modalAbierto = signal<boolean>(false);
   readonly editandoId = signal<number | null>(null);
   readonly guardando = signal<boolean>(false);
+  readonly borrando = signal<number | null>(null);
   readonly mensaje = signal<string>('');
   readonly error = signal<boolean>(false);
 
@@ -111,6 +112,11 @@ export class Suppliers {
   }
 
   eliminar(proveedor: Supplier): void {
+    // Sin guarda, un doble clic dispara dos DELETE del mismo proveedor
+    if (this.borrando() !== null) {
+      return;
+    }
+
     const confirmado = confirm(
       `¿Eliminar el proveedor "${proveedor.name}"? Esta acción no se puede deshacer.`
     );
@@ -119,16 +125,23 @@ export class Suppliers {
       return;
     }
 
+    this.borrando.set(proveedor.id);
+
     this.supplierService.deleteSupplier(proveedor.id).subscribe({
-      next: () => this.mostrarAlerta('Proveedor eliminado', false),
-      error: (err) =>
+      next: () => {
+        this.borrando.set(null);
+        this.mostrarAlerta('Proveedor eliminado', false);
+      },
+      error: (err) => {
+        this.borrando.set(null);
         this.mostrarAlerta(
           this.mensajeDeError(
             err,
             'No se pudo eliminar el proveedor (verifique que no tenga compras asociadas)'
           ),
           true
-        )
+        );
+      }
     });
   }
 
