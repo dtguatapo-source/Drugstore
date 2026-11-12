@@ -34,6 +34,8 @@ export class Purchases {
   readonly proveedores = signal<Supplier[]>([]);
   readonly sugerencias = signal<Supplier[]>([]);
   readonly mostrarSugerencias = signal<boolean>(false);
+  // Bloquea el doble submit: dos clics crearían dos compras y sumarían el stock dos veces
+  readonly guardando = signal<boolean>(false);
 
   // Estado de la carga (S7): esta pantalla depende de las compras y de los medicamentos
   private readonly cargandoCompras = toSignal(this.purchaseService.cargando$, {
@@ -234,6 +236,10 @@ export class Purchases {
   }
 
   guardarCompra(): void {
+    if (this.guardando()) {
+      return;
+    }
+
     if (this.tablaTemporal().length === 0) {
       this.mostrarAlerta('No hay productos en la lista', true);
       return;
@@ -249,6 +255,8 @@ export class Purchases {
     }
 
     // 👈 Enviamos la compra al Backend (crea/busca el proveedor, guarda la compra y NestJS suma el stock en BD)
+    this.guardando.set(true);
+
     this.purchaseService
       .registrarCompraEnBackend(
         provider,
@@ -276,9 +284,11 @@ export class Purchases {
           };
 
           this.tablaTemporal.set([]);
+          this.guardando.set(false);
           this.mostrarAlerta('Compra registrada correctamente', false);
         },
         error: (err) => {
+          this.guardando.set(false);
           console.error('Error al guardar la compra en el backend:', err);
           const msgBackend =
             err?.error?.message || 'Error al registrar la compra en la base de datos';
