@@ -31,6 +31,7 @@ export class Login {
 
     // Validaciones básicas
     if (!user || !pass) {
+      this.intento.set(false);
       this.mensaje.set('Complete todos los campos');
       this.error.set(true);
       return;
@@ -48,6 +49,7 @@ export class Login {
       error: (err) => {
         // Error: el backend devolvió 401 (credenciales incorrectas) o no hay conexión
         console.error('Error en login:', err);
+        this.intento.set(false);
         if (err.status === 0) {
           this.mensaje.set('No se pudo conectar con el servidor (backend apagado o error de CORS)');
         } else {
@@ -59,12 +61,23 @@ export class Login {
   }
 
   entrarAlSistema(res: any): void {
+    const token = res?.access_token;
+
+    // Un login sin token no es un login: si lo guardamos como "undefined", el
+    // guard rechaza la sesión después y el usuario vuelve acá sin saber por qué.
+    if (typeof token !== 'string' || token.trim() === '') {
+      this.intento.set(false);
+      this.error.set(true);
+      this.mensaje.set('El servidor no devolvió una sesión válida. Intente nuevamente.');
+      return;
+    }
+
     this.error.set(false);
     this.mensaje.set('');
 
     // Guardamos la sesión y el token JWT devuelto por el backend
     localStorage.setItem('login', 'true');
-    localStorage.setItem('token', res.access_token);
+    localStorage.setItem('token', token);
     if (res.user) {
       localStorage.setItem('user', JSON.stringify(res.user));
     }
