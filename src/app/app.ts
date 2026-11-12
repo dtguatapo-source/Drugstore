@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { limpiarSesion } from './pages/auth.guard/auth.guard';
+import { limpiarSesion, rolDeSesion } from './pages/auth.guard/auth.guard';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +19,16 @@ export class App {
 
   // MIGRACIÓN ANGULAR 21: Manejo del estado del layout mediante una Signal reactiva
   readonly mostrarLayout = signal<boolean>(false);
+
+  // Rol real tomado del JWT: la UI muestra solo lo que el backend va a permitir
+  readonly rol = signal<string | null>(rolDeSesion());
+  readonly esAdmin = computed(() => this.rol() === 'ADMIN');
+  readonly etiquetaRol = computed(() => {
+    const rol = this.rol();
+    if (rol === 'ADMIN') return 'Admin';
+    if (rol === 'CAJERO') return 'Cajero';
+    return 'Usuario';
+  });
 
   private readonly rutasSinMenu = ['/login', '/dashboard', '/register'];
 
@@ -38,6 +48,8 @@ export class App {
     const esRutaSinMenu = this.rutasSinMenu.some(ruta => url.startsWith(ruta));
     // MIGRACIÓN ANGULAR 21: Actualización de la signal usando .set()
     this.mostrarLayout.set(!esRutaSinMenu);
+    // El token puede cambiar entre navegaciones (login, logout, vencimiento)
+    this.rol.set(rolDeSesion());
   }
 
   salir(): void {

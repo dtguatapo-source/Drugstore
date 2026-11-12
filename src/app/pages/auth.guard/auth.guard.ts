@@ -53,6 +53,26 @@ function decodificarPayload(segmento: string): Record<string, unknown> | null {
   }
 }
 
+/**
+ * Rol firmado en el JWT de la sesión actual. Devuelve null si no hay sesión o si
+ * el token no trae un rol utilizable: nunca se asume un rol por defecto.
+ */
+export function rolDeSesion(): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  const token = localStorage.getItem('token');
+  if (!esTokenVigente(token)) {
+    return null;
+  }
+
+  const payload = decodificarPayload((token as string).split('.')[1]);
+  const rol = payload?.['role'];
+
+  return typeof rol === 'string' && rol.trim() !== '' ? rol.trim() : null;
+}
+
 export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
