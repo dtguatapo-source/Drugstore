@@ -157,6 +157,20 @@ export class Inventory {
     this.newMedicine = { ...m };
   }
 
+  /**
+   * Enter y Espacio seleccionan la fila igual que el clic: la tabla se puede
+   * recorrer y usar solo con el teclado.
+   */
+  alPresionarTecla(evento: KeyboardEvent, m: Medicine): void {
+    if (evento.key !== 'Enter' && evento.key !== ' ') {
+      return;
+    }
+
+    // Espacio no debe desplazar la página mientras se elige un producto
+    evento.preventDefault();
+    this.seleccionar(m);
+  }
+
   actualizar(): void {
     if (this.guardando()) {
       return;

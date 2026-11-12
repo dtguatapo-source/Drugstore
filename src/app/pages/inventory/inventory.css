@@ -61,6 +61,32 @@ thead th {
   cursor: pointer;
 }
 
+/* La fila se puede enfocar y marca la selección actual */
+.fila-clicable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.fila-clicable[aria-selected='true'] {
+  background-color: var(--primary-soft);
+}
+
+/* El nombre se comporta como enlace, pero es un botón real */
+.btn-nombre-medicamento {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--primary-hover);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.btn-nombre-medicamento:hover,
+.btn-nombre-medicamento:focus-visible {
+  text-decoration: underline;
+}
+
 .etiqueta-estado {
   display: inline-block;
   padding: 4px 10px;

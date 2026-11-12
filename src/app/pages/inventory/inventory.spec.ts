@@ -164,3 +164,70 @@ describe('Inventory (flujo de escritura honesto)', () => {
     expect(doble.registrados.length).toBe(0);
   });
 });
+
+describe('Inventory (selección de fila accesible)', () => {
+  let fixture: ComponentFixture<Inventory>;
+  let doble: MedicineServiceStub;
+
+  const amoxicilina: Medicine = {
+    id: 'MED-007',
+    name: 'Amoxicilina',
+    laboratory: 'Genfar',
+    description: 'Cápsulas',
+    stock: 3,
+    purchasePrice: 1,
+    salePrice: 2
+  };
+
+  beforeEach(async () => {
+    doble = new MedicineServiceStub();
+
+    await TestBed.configureTestingModule({
+      imports: [Inventory],
+      providers: [{ provide: MedicineService, useValue: doble }]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Inventory);
+    doble.medicines$.next([amoxicilina]);
+    fixture.detectChanges();
+  });
+
+  it('debe ofrecer el nombre como botón alcanzable que selecciona la fila', () => {
+    const boton = fixture.nativeElement.querySelector(
+      'tbody .btn-nombre-medicamento'
+    ) as HTMLButtonElement;
+
+    expect(boton).not.toBeNull();
+    expect(boton.type).toBe('button');
+    expect(boton.textContent).toContain('Amoxicilina');
+    expect(boton.getAttribute('aria-label')).toContain('Amoxicilina');
+
+    // Alcanzable sin ratón: el foco llega al botón
+    boton.focus();
+    expect(document.activeElement).toBe(boton);
+
+    boton.click();
+
+    expect(fixture.componentInstance.newMedicine.id).toBe('MED-007');
+    expect(fixture.componentInstance.newMedicine.name).toBe('Amoxicilina');
+  });
+
+  it('debe seleccionar la fila con Enter y marcarla con aria-selected', () => {
+    const fila = fixture.nativeElement.querySelector('tbody tr.fila-clicable') as HTMLElement;
+
+    expect(fila.getAttribute('tabindex')).toBe('0');
+
+    fila.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(fixture.componentInstance.newMedicine.id).toBe('MED-007');
+
+    fixture.detectChanges();
+    expect(fila.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('debe etiquetar el filtro de texto libre', () => {
+    const filtro = fixture.nativeElement.querySelector('.caja-busqueda input') as HTMLInputElement;
+
+    expect(filtro.getAttribute('aria-label')).toContain('Filtrar');
+  });
+});

@@ -11,7 +11,12 @@
     <h2>Gestión de Inventario</h2>
 
     <div class="caja-busqueda">
-      <input type="text" placeholder="Filtrar por nombre o ID..." (input)="buscar($event)">
+      <input
+        type="text"
+        placeholder="Filtrar por nombre o ID..."
+        aria-label="Filtrar inventario por nombre o ID"
+        (input)="buscar($event)"
+      >
     </div>
   </div>
 
@@ -19,32 +24,32 @@
     <p class="section-title">DATOS DEL MEDICAMENTO</p>
     <div class="grid-formulario">
       <div class="field">
-        <label>ID / CODIGO</label>
-        <input type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automático">
+        <label for="inv-id">ID / CODIGO</label>
+        <input id="inv-id" type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automático">
       </div>
       <div class="field grande">
-        <label>NOMBRE COMERCIAL</label>
-        <input type="text" [(ngModel)]="newMedicine.name">
+        <label for="inv-nombre">NOMBRE COMERCIAL</label>
+        <input id="inv-nombre" type="text" [(ngModel)]="newMedicine.name" required>
       </div>
       <div class="field">
-        <label>LABORATORIO</label>
-        <input type="text" [(ngModel)]="newMedicine.laboratory">
+        <label for="inv-laboratorio">LABORATORIO</label>
+        <input id="inv-laboratorio" type="text" [(ngModel)]="newMedicine.laboratory" required>
       </div>
       <div class="field grande">
-        <label>DESCRIPCIÓN</label>
-        <input type="text" [(ngModel)]="newMedicine.description">
+        <label for="inv-descripcion">DESCRIPCIÓN</label>
+        <input id="inv-descripcion" type="text" [(ngModel)]="newMedicine.description">
       </div>
       <div class="field">
-        <label>STOCK</label>
-        <input type="number" [(ngModel)]="newMedicine.stock">
+        <label for="inv-stock">STOCK</label>
+        <input id="inv-stock" type="number" min="0" step="1" [(ngModel)]="newMedicine.stock" required>
       </div>
       <div class="field">
-        <label>PRECIO COMPRA</label>
-        <input type="number" [(ngModel)]="newMedicine.purchasePrice">
+        <label for="inv-precio-compra">PRECIO COMPRA</label>
+        <input id="inv-precio-compra" type="number" min="0" step="0.01" [(ngModel)]="newMedicine.purchasePrice" required>
       </div>
       <div class="field">
-        <label>PRECIO VENTA</label>
-        <input type="number" [(ngModel)]="newMedicine.salePrice">
+        <label for="inv-precio-venta">PRECIO VENTA</label>
+        <input id="inv-precio-venta" type="number" min="0" step="0.01" [(ngModel)]="newMedicine.salePrice" required>
       </div>
       <div class="botones-inline">
         <button class="btn btn-primary" (click)="registrar()" [disabled]="guardando()">Registrar</button>
@@ -72,9 +77,25 @@
         <tbody>
           <!-- Uso de @for moderno de Angular 21 -->
           @for (m of listaFiltrada(); track m.id) {
-            <tr (click)="seleccionar(m)" class="fila-clicable">
+            <tr
+              (click)="seleccionar(m)"
+              (keydown)="alPresionarTecla($event, m)"
+              class="fila-clicable"
+              tabindex="0"
+              [attr.aria-selected]="newMedicine.id === m.id"
+            >
               <td>{{ m.id }}</td>
-              <td>{{ m.name }}</td>
+              <td>
+                <!-- Botón real: Modificar/Eliminar quedan al alcance del teclado -->
+                <button
+                  type="button"
+                  class="btn-nombre-medicamento"
+                  [attr.aria-label]="'Seleccionar ' + m.name"
+                  (click)="seleccionar(m)"
+                >
+                  {{ m.name }}
+                </button>
+              </td>
               <td>{{ m.laboratory }}</td>
               <td>{{ m.description }}</td> 
               <td>{{ m.stock }}</td>
