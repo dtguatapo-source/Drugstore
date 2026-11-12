@@ -140,4 +140,177 @@ describe('MedicineService (estados de carga y error)', () => {
     expect(lista[0].purchasePrice).toBe(1.5);
     expect(lista[0].status).toBe('Sin stock');
   });
+
+  it('debe conservar el estado VENCIDO que manda el backend', () => {
+    const listas: Medicine[][] = [];
+    servicio.medicines$.subscribe((valor) => listas.push(valor));
+
+    httpMock.expectOne(URL_MEDICAMENTOS).flush([
+      {
+        id: 'MED-2',
+        name: 'Amoxicilina',
+        laboratory: 'Genfar',
+        category: 'Antibiótico',
+        description: 'Cápsulas',
+        keywords: '',
+        stock: 12,
+        purchasePrice: '2.00',
+        salePrice: '3.00',
+        status: 'VENCIDO'
+      }
+    ]);
+
+    const lista = listas[listas.length - 1];
+    expect(lista[0].status).toBe('Vencido');
+  });
+
+  it('debe seguir derivando Activo y Bajo stock desde el stock', () => {
+    const listas: Medicine[][] = [];
+    servicio.medicines$.subscribe((valor) => listas.push(valor));
+
+    httpMock.expectOne(URL_MEDICAMENTOS).flush([
+      {
+        id: 'MED-3',
+        name: 'Loratadina',
+        laboratory: 'MK',
+        description: 'Tabletas',
+        stock: 50,
+        purchasePrice: '1.00',
+        salePrice: '2.00'
+      },
+      {
+        id: 'MED-4',
+        name: 'Cetirizina',
+        laboratory: 'MK',
+        description: 'Tabletas',
+        stock: 5,
+        purchasePrice: '1.00',
+        salePrice: '2.00'
+      }
+    ]);
+
+    const lista = listas[listas.length - 1];
+    expect(lista[0].status).toBe('Activo');
+    expect(lista[1].status).toBe('Bajo stock');
+  });
+});
+
+describe('MedicineService (escrituras observables)', () => {
+  let httpMock: HttpTestingController;
+  let servicio: MedicineService;
+
+  const nuevo: Medicine = {
+    id: 'MED-001',
+    name: 'Ibuprofeno',
+    laboratory: 'Genfar',
+    category: 'Analgésico',
+    description: 'Tabletas',
+    keywords: ['dolor'],
+    stock: 10,
+    purchasePrice: 1.5,
+    salePrice: 2.5
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    httpMock = TestBed.inject(HttpTestingController);
+    servicio = TestBed.inject(MedicineService);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
+  });
+
+  it('debe devolver un Observable que actualiza medicines$ al registrar', () => {
+    const listas: Medicine[][] = [];
+    servicio.medicines$.subscribe((valor) => listas.push(valor));
+
+    httpMock.expectOne(URL_MEDICAMENTOS).flush([]);
+
+    let respondido: Medicine | undefined;
+    const observable = servicio.addMedicine({ ...nuevo });
+
+    // Sin suscripción no hay petición: la escritura la decide quien llama
+    httpMock.expectNone(URL_MEDICAMENTOS);
+
+    observable.subscribe((medicamento) => (respondido = medicamento));
+
+    httpMock.expectOne({ method: 'POST', url: URL_MEDICAMENTOS }).flush({
+      id: 'MED-001',
+      name: 'Ibuprofeno',
+      laboratory: 'Genfar',
+      category: 'Analgésico',
+      description: 'Tabletas',
+      keywords: 'dolor',
+      stock: 10,
+      purchasePrice: '1.50',
+      salePrice: '2.50'
+    });
+
+    expect(respondido?.id).toBe('MED-001');
+    expect(respondido?.status).toBe('Bajo stock');
+    expect(listas[listas.length - 1].map((m) => m.id)).toEqual(['MED-001']);
+  });
+
+  it('debe entregar el error HTTP al suscriptor en vez de tragárselo', () => {
+    const listas: Medicine[][] = [];
+    servicio.medicines$.subscribe((valor) => listas.push(valor));
+
+    httpMock.expectOne(URL_MEDICAMENTOS).flush([]);
+
+    const errores: { status?: number }[] = [];
+    const exitos: Medicine[] = [];
+
+    servicio.addMedicine({ ...nuevo }).subscribe({
+      next: (medicamento) => exitos.push(medicamento),
+      error: (err) => errores.push(err)
+    });
+
+    httpMock.expectOne({ method: 'POST', url: URL_MEDICAMENTOS }).flush(
+      { message: 'El ID ya existe' },
+      { status: 409, statusText: 'Conflict' }
+    );
+
+    expect(errores.length).toBe(1);
+    expect(errores[0].status).toBe(409);
+    expect(exitos.length).toBe(0);
+    // Un fallo no debe ensuciar la tabla con datos inventados
+    expect(listas[listas.length - 1]).toEqual([]);
+  });
+
+  it('debe rechazar números inválidos con un error explícito y sin llamar al backend', () => {
+    httpMock.expectOne(URL_MEDICAMENTOS).flush([]);
+
+    const casos: {
+      campo: 'stock' | 'purchasePrice' | 'salePrice';
+      etiqueta: string;
+      valor: unknown;
+    }[] = [
+      { campo: 'stock', etiqueta: 'stock', valor: 'abc' },
+      { campo: 'stock', etiqueta: 'stock', valor: '' },
+      { campo: 'stock', etiqueta: 'stock', valor: -5 },
+      { campo: 'purchasePrice', etiqueta: 'precio de compra', valor: 'abc' },
+      { campo: 'salePrice', etiqueta: 'precio de venta', valor: -1 }
+    ];
+
+    for (const caso of casos) {
+      const invalido = { ...nuevo, [caso.campo]: caso.valor } as unknown as Medicine;
+      const errores: Error[] = [];
+
+      servicio.addMedicine(invalido).subscribe({
+        next: () => errores.push(new Error('no debería registrar')),
+        error: (err) => errores.push(err as Error)
+      });
+
+      expect(errores.length).toBe(1);
+      expect(errores[0]).toBeInstanceOf(Error);
+      expect(errores[0].message).toContain(caso.etiqueta);
+      expect(errores[0].message).toMatch(/número válido|negativo/);
+    }
+
+    // Ningún caso inválido generó una petición real
+    httpMock.expectNone({ method: 'POST', url: URL_MEDICAMENTOS });
+  });
 });
