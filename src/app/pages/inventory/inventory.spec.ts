@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import { Medicine } from '../../models/medicine';
@@ -12,6 +14,8 @@ describe('Inventory', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Inventory],
+      // Sin esto el componente pide HTTP real y whenStable() espera la red
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(Inventory);
