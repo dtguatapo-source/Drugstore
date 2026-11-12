@@ -66,7 +66,7 @@ describe('roleGuard', () => {
 
   it('should send a different role back to the dashboard', () => {
     localStorage.setItem('login', 'cajero');
-    localStorage.setItem('token', tokenConRol('CAJERO'));
+    localStorage.setItem('token', tokenConRol('USER'));
     const { navegado } = armarGuard();
 
     const resultado = TestBed.runInInjectionContext(() => roleGuard('ADMIN')(RUTA, ESTADO));

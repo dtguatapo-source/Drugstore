@@ -26,7 +26,7 @@ export class App {
   readonly etiquetaRol = computed(() => {
     const rol = this.rol();
     if (rol === 'ADMIN') return 'Admin';
-    if (rol === 'CAJERO') return 'Cajero';
+    if (rol === 'USER') return 'Cajero';
     return 'Usuario';
   });
 
