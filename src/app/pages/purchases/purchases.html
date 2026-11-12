@@ -12,25 +12,43 @@
     <p class="section-title">DATOS DE LA COMPRA</p>
     <div class="grid-row">
       <div class="field">
-        <label>FECHA</label>
-        <input type="date" [(ngModel)]="newPurchase.date" [min]="fechaMinima" [max]="fechaHoy">
+        <label for="pur-fecha">FECHA</label>
+        <input
+          id="pur-fecha"
+          type="date"
+          [(ngModel)]="newPurchase.date"
+          [min]="fechaMinima"
+          [max]="fechaHoy"
+          required
+        >
       </div>
       <div class="field proveedor-field">
-        <label for="proveedor">PROVEEDOR</label>
+        <label for="pur-proveedor">PROVEEDOR</label>
         <input
-          id="proveedor"
+          id="pur-proveedor"
           type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="pur-lista-proveedores"
+          [attr.aria-expanded]="mostrarSugerencias()"
+          [attr.aria-activedescendant]="opcionActivaId()"
           [(ngModel)]="newPurchase.provider"
           (input)="onProveedorInput()"
           (focus)="filtrarProveedores()"
           (blur)="ocultarSugerencias()"
+          (keydown)="alPresionarTeclaProveedor($event)"
           placeholder="Escriba para buscar un proveedor"
           autocomplete="off"
+          required
         >
         @if (mostrarSugerencias() && sugerencias().length) {
-          <ul class="sugerencias">
-            @for (proveedor of sugerencias(); track proveedor.id) {
+          <ul class="sugerencias" id="pur-lista-proveedores" role="listbox" aria-label="Proveedores sugeridos">
+            @for (proveedor of sugerencias(); track proveedor.id; let i = $index) {
               <li
+                id="pur-opcion-{{ i }}"
+                role="option"
+                [attr.aria-selected]="i === indiceActivo()"
+                [class.activo]="i === indiceActivo()"
                 (mousedown)="$event.preventDefault()"
                 (click)="seleccionarProveedor(proveedor)"
               >
@@ -42,8 +60,8 @@
         }
       </div>
       <div class="field">
-        <label>N° FACTURA (AUTOMÁTICO)</label>
-        <input type="text" [value]="newPurchase.invoiceNumber" readonly>
+        <label for="pur-factura">N° FACTURA (AUTOMÁTICO)</label>
+        <input id="pur-factura" type="text" [value]="newPurchase.invoiceNumber" readonly>
       </div>
     </div>
   </div>
@@ -53,8 +71,14 @@
 
     <div class="grid-row">
       <div class="field">
-        <label>SELECCIONAR</label>
-        <select class="form-select" [(ngModel)]="newPurchase.medicineId" (change)="buscarMed()">
+        <label for="pur-medicamento">SELECCIONAR</label>
+        <select
+          id="pur-medicamento"
+          class="form-select"
+          [(ngModel)]="newPurchase.medicineId"
+          (change)="buscarMed()"
+          required
+        >
           <option value="">Seleccione un producto</option>
           @for (med of listaMedicamentos(); track med.id) {
             <option [value]="med.id">
@@ -64,31 +88,55 @@
         </select>
       </div>
       <div class="field">
-        <label>NOMBRE</label>
-        <input type="text" [value]="medEncontrado()?.name || ''" readonly>
+        <label for="pur-nombre">NOMBRE</label>
+        <input id="pur-nombre" type="text" [value]="medEncontrado()?.name || ''" readonly>
       </div>
       <div class="field">
-        <label>LABORATORIO</label>
-        <input type="text" [value]="medEncontrado()?.laboratory || ''" readonly>
+        <label for="pur-laboratorio">LABORATORIO</label>
+        <input id="pur-laboratorio" type="text" [value]="medEncontrado()?.laboratory || ''" readonly>
       </div>
     </div>
 
     <div class="grid-row separacion-superior">
       <div class="field">
-        <label>CANTIDAD</label>
-        <input type="number" [(ngModel)]="newPurchase.quantity">
+        <label for="pur-cantidad">CANTIDAD</label>
+        <input
+          id="pur-cantidad"
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="newPurchase.quantity"
+          required
+        >
       </div>
       <div class="field">
-        <label>PRECIO COMPRA</label>
-        <input type="number" [(ngModel)]="newPurchase.purchasePrice">
+        <label for="pur-precio-compra">PRECIO COMPRA</label>
+        <input
+          id="pur-precio-compra"
+          type="number"
+          min="0"
+          step="0.01"
+          [(ngModel)]="newPurchase.purchasePrice"
+        >
       </div>
       <div class="field">
-        <label>PRECIO VENTA</label>
-        <input type="number" [(ngModel)]="newPurchase.salePrice">
+        <label for="pur-precio-venta">PRECIO VENTA</label>
+        <input
+          id="pur-precio-venta"
+          type="number"
+          min="0"
+          step="0.01"
+          [(ngModel)]="newPurchase.salePrice"
+        >
       </div>
 
       <div class="field-button">
-        <button type="button" class="btn-add-circle" (click)="meterALista()">
+        <button
+          type="button"
+          class="btn-add-circle"
+          aria-label="Agregar producto a la lista"
+          (click)="meterALista()"
+        >
           +
         </button>
       </div>

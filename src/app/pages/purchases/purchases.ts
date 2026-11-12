@@ -34,6 +34,8 @@ export class Purchases {
   readonly proveedores = signal<Supplier[]>([]);
   readonly sugerencias = signal<Supplier[]>([]);
   readonly mostrarSugerencias = signal<boolean>(false);
+  // Opción resaltada con las flechas del combobox (-1 = ninguna)
+  readonly indiceActivo = signal<number>(-1);
   // Bloquea el doble submit: dos clics crearían dos compras y sumarían el stock dos veces
   readonly guardando = signal<boolean>(false);
 
@@ -49,6 +51,17 @@ export class Purchases {
 
   readonly cargando = computed(() => this.cargandoCompras() || this.cargandoMedicamentos());
   readonly errorCarga = computed(() => this.errorCompras() || this.errorMedicamentos());
+
+  // Id de la opción activa para aria-activedescendant (null quita el atributo)
+  readonly opcionActivaId = computed(() => {
+    const indice = this.indiceActivo();
+
+    if (!this.mostrarSugerencias() || indice < 0) {
+      return null;
+    }
+
+    return `pur-opcion-${indice}`;
+  });
 
   // Rango permitido para la fecha de compra: hoy y los 4 dias anteriores
   readonly fechaHoy = this.formatearFecha(new Date());
@@ -107,6 +120,7 @@ export class Purchases {
 
     this.sugerencias.set(coincidencias);
     this.mostrarSugerencias.set(true);
+    this.indiceActivo.set(-1);
   }
 
   // Al escribir, el proveedor deja de estar seleccionado hasta que elija una sugerencia
@@ -118,11 +132,72 @@ export class Purchases {
   seleccionarProveedor(proveedor: Supplier): void {
     this.newPurchase.provider = proveedor.name;
     this.newPurchase.supplierId = proveedor.id;
-    this.mostrarSugerencias.set(false);
+    this.ocultarSugerencias();
   }
 
   ocultarSugerencias(): void {
     this.mostrarSugerencias.set(false);
+    this.indiceActivo.set(-1);
+  }
+
+  /**
+   * Combobox de proveedores: flechas para recorrer las opciones, Enter para
+   * elegir la activa y Escape para cerrar la lista.
+   */
+  alPresionarTeclaProveedor(evento: KeyboardEvent): void {
+    switch (evento.key) {
+      case 'ArrowDown':
+        evento.preventDefault();
+        this.moverOpcion(1);
+        return;
+      case 'ArrowUp':
+        evento.preventDefault();
+        this.moverOpcion(-1);
+        return;
+      case 'Enter': {
+        const elegido = this.opcionActiva();
+
+        if (elegido) {
+          evento.preventDefault();
+          this.seleccionarProveedor(elegido);
+        }
+        return;
+      }
+      case 'Escape':
+        evento.preventDefault();
+        this.ocultarSugerencias();
+        return;
+      default:
+        return;
+    }
+  }
+
+  private moverOpcion(paso: number): void {
+    // Si la lista está cerrada, la flecha la abre con las coincidencias actuales
+    if (!this.mostrarSugerencias()) {
+      this.filtrarProveedores();
+    }
+
+    const total = this.sugerencias().length;
+
+    if (total === 0) {
+      this.indiceActivo.set(-1);
+      return;
+    }
+
+    const actual = this.indiceActivo();
+    const siguiente = actual < 0 ? (paso > 0 ? 0 : total - 1) : actual + paso;
+
+    // Sin saltos fuera de la lista: se detiene en los extremos
+    this.indiceActivo.set(Math.min(Math.max(siguiente, 0), total - 1));
+  }
+
+  private opcionActiva(): Supplier | undefined {
+    if (!this.mostrarSugerencias()) {
+      return undefined;
+    }
+
+    return this.sugerencias()[this.indiceActivo()];
   }
 
   // Compara sin acentos ni mayusculas ("Farmacéutica" = "farmaceutica")

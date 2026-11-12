@@ -94,6 +94,11 @@
   background-color: var(--primary-soft);
 }
 
+/* Opción resaltada con las flechas del teclado */
+.sugerencias li.activo {
+  background-color: var(--primary-soft);
+}
+
 .sugerencia-nombre {
   color: var(--text-body);
   font-size: 14px;
