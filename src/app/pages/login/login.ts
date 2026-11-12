@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http'; // 👈 1. Importamos HttpClient
+import { environment } from '../../../environments/environments';
 
 @Component({
   selector: 'app-login',
@@ -38,7 +39,7 @@ export class Login {
     }
 
     // 👈 3. Petición POST directa al Backend (puerto 3000)
-    this.http.post<any>('http://localhost:3000/auth/login', {
+    this.http.post<any>(`${environment.apiBase}/auth/login`, {
       username: user,
       password: pass
     }).subscribe({

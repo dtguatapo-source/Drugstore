@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http'; //  Importamos HttpClient par
 import { BehaviorSubject, Observable, defer, map, tap } from 'rxjs';
 import { Medicine } from '../models/medicine';
 import { mensajeDeError } from '../shared/mensaje-error';
+import { environment } from '../../environments/environments';
 
 /**
  * Convierte un valor del formulario en número sin inventar ceros.
@@ -33,7 +34,7 @@ export function numeroEstricto(valor: unknown, campo: string): number {
 @Injectable({ providedIn: 'root' })
 export class MedicineService {
   private http = inject(HttpClient); //  Inyectamos HttpClient
-  private apiUrl = 'http://localhost:3000/medicines'; //  Endpoint de medicamentos en NestJS
+  private apiUrl = `${environment.apiBase}/medicines`; //  Endpoint de medicamentos en NestJS
 
   //  Empezamos desde cero con un arreglo vacío []; todo vendrá de PostgreSQL
   private medicines = new BehaviorSubject<Medicine[]>([]);
@@ -51,7 +52,7 @@ export class MedicineService {
     this.loadMedicines(); // Al iniciar el servicio, consulta los medicamentos guardados en la BD
   }
 
-  // Obtiene los medicamentos reales desde PostgreSQL (GET http://localhost:3000/medicines)
+  // Obtiene los medicamentos reales desde PostgreSQL (GET /medicines)
   loadMedicines() {
     this.cargando.next(true);
     this.errorCarga.next(''); //  Cada carga arranca sin el error anterior
@@ -90,7 +91,7 @@ export class MedicineService {
     );
   }
 
-  //  Elimina un medicamento de PostgreSQL (DELETE http://localhost:3000/medicines/:id)
+  //  Elimina un medicamento de PostgreSQL (DELETE /medicines/:id)
   deleteMedicine(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => {
@@ -101,7 +102,7 @@ export class MedicineService {
     );
   }
 
-  //  Modifica un medicamento en PostgreSQL (PATCH http://localhost:3000/medicines/:id)
+  //  Modifica un medicamento en PostgreSQL (PATCH /medicines/:id)
   updateMedicine(updatedMedicine: Medicine): Observable<Medicine> {
     return defer(() => {
       const payload = this.prepararParaBackend(updatedMedicine);

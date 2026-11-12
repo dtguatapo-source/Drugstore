@@ -4,14 +4,15 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators'; // 👈 Operadores para encadenar Cliente -> Venta
 import { Sale } from '../models/sale';
 import { mensajeDeError } from '../shared/mensaje-error';
+import { environment } from '../../environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SalesService {
   private http = inject(HttpClient); // 👈 Inyectamos HttpClient
-  private salesUrl = 'http://localhost:3000/sales'; // 👈 Endpoint de ventas en NestJS
-  private customersUrl = 'http://localhost:3000/customers'; // 👈 Endpoint de clientes en NestJS
+  private salesUrl = `${environment.apiBase}/sales`; // 👈 Endpoint de ventas en NestJS
+  private customersUrl = `${environment.apiBase}/customers`; // 👈 Endpoint de clientes en NestJS
 
   private _sales = new BehaviorSubject<Sale[]>([]);
   sales$ = this._sales.asObservable();
@@ -31,7 +32,7 @@ export class SalesService {
     this.loadSales(); // 👈 Al iniciar el servicio, cargamos las ventas reales desde PostgreSQL
   }
 
-  // 👈 Obtiene todas las ventas de PostgreSQL (GET http://localhost:3000/sales)
+  // 👈 Obtiene todas las ventas de PostgreSQL (GET /sales)
   loadSales() {
     this._cargando.next(true);
     this._errorCarga.next(''); // Cada carga arranca sin el error anterior
@@ -106,7 +107,7 @@ export class SalesService {
           return of(Number(existente.id));
         }
 
-        // 👈 Si no existe, lo creamos en POST http://localhost:3000/customers
+        // 👈 Si no existe, lo creamos en POST /customers
         return this.http
           .post<any>(this.customersUrl, {
             name: nombreFinal,
@@ -121,7 +122,7 @@ export class SalesService {
     );
   }
 
-  // 👈 Registra primero el Cliente (si se ingresó) y luego la Venta en POST http://localhost:3000/sales
+  // 👈 Registra primero el Cliente (si se ingresó) y luego la Venta en POST /sales
   registrarVentaEnBackend(
     customer: { name: string; idNumber: string; date?: string },
     cartItems: any[],

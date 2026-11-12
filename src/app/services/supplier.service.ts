@@ -4,13 +4,14 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Supplier, SupplierPayload } from '../models/supplier';
 import { mensajeDeError } from '../shared/mensaje-error';
+import { environment } from '../../environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SupplierService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:3000/suppliers';
+  private readonly apiUrl = `${environment.apiBase}/suppliers`;
 
   private readonly suppliers = new BehaviorSubject<Supplier[]>([]);
   readonly suppliers$ = this.suppliers.asObservable();
@@ -27,7 +28,7 @@ export class SupplierService {
     this.refrescar();
   }
 
-  // GET http://localhost:3000/suppliers
+  // GET /suppliers
   getSuppliers(): Observable<Supplier[]> {
     return this.http.get<any[]>(this.apiUrl).pipe(
       map((data) => (data || []).map((proveedor) => this.adaptar(proveedor))),
@@ -35,7 +36,7 @@ export class SupplierService {
     );
   }
 
-  // POST http://localhost:3000/suppliers
+  // POST /suppliers
   createSupplier(proveedor: SupplierPayload): Observable<Supplier> {
     return this.http.post<any>(this.apiUrl, proveedor).pipe(
       map((creado) => this.adaptar(creado)),
@@ -43,7 +44,7 @@ export class SupplierService {
     );
   }
 
-  // PATCH http://localhost:3000/suppliers/:id
+  // PATCH /suppliers/:id
   updateSupplier(proveedor: Supplier): Observable<Supplier> {
     const { id, ...body } = proveedor;
 
@@ -53,7 +54,7 @@ export class SupplierService {
     );
   }
 
-  // DELETE http://localhost:3000/suppliers/:id
+  // DELETE /suppliers/:id
   deleteSupplier(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(tap(() => this.refrescar()));
   }

@@ -4,14 +4,15 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators'; 
 import { Purchase } from '../models/purchase';
 import { mensajeDeError } from '../shared/mensaje-error';
+import { environment } from '../../environments/environments';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PurchaseService {
   private http = inject(HttpClient); //Inyectamos HttpClient
-  private purchasesUrl = 'http://localhost:3000/purchases'; 
-  private suppliersUrl = 'http://localhost:3000/suppliers'; 
+  private purchasesUrl = `${environment.apiBase}/purchases`; 
+  private suppliersUrl = `${environment.apiBase}/suppliers`; 
 
   private purchases = new BehaviorSubject<Purchase[]>([]);
   purchases$ = this.purchases.asObservable();

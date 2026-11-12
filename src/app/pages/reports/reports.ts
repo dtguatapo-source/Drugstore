@@ -11,6 +11,7 @@ import { Sale } from '../../models/sale';
 import { Medicine } from '../../models/medicine';
 import { Purchase } from '../../models/purchase';
 import * as XLSX from 'xlsx';
+import { environment } from '../../../environments/environments';
 
 export interface ReportSummary {
   sales: { total: number; count: number; items: number };
@@ -73,7 +74,7 @@ export interface CriterioMovimientos {
   hasta?: string;
 }
 
-const API_URL = 'http://localhost:3000/reports';
+const API_URL = `${environment.apiBase}/reports`;
 const REQUEST_TIMEOUT = 8000;
 const RECIENTES_MAX = 10;
 const TOP_MAX = 5;
