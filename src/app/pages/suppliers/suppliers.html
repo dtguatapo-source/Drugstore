@@ -13,7 +13,7 @@
         {{ proveedores().length }} {{ proveedores().length === 1 ? 'proveedor registrado' : 'proveedores registrados' }}
       </p>
     </div>
-    <button type="button" class="btn btn-primary" (click)="abrirNuevo()">
+    <button type="button" class="btn btn-primary" (click)="abrirNuevo($event)">
       + Nuevo Proveedor
     </button>
   </div>
@@ -42,7 +42,7 @@
               <td>{{ proveedor.email || '—' }}</td>
               <td>{{ proveedor.address || '—' }}</td>
               <td class="acciones">
-                <button type="button" class="btn btn-secondary" (click)="abrirEditar(proveedor)">
+                <button type="button" class="btn btn-secondary" (click)="abrirEditar(proveedor, $event)">
                   Editar
                 </button>
                 <button type="button" class="btn btn-danger" (click)="eliminar(proveedor)"
@@ -70,38 +70,49 @@
 
 @if (modalAbierto()) {
   <div class="overlay">
-    <div class="modal-card">
-      <h3>{{ editandoId() === null ? 'Nuevo Proveedor' : 'Editar Proveedor' }}</h3>
+    <div
+      #dialogoProveedor
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sup-dialogo-titulo"
+      (keydown)="alPresionarTecla($event)"
+    >
+      <h3 id="sup-dialogo-titulo">
+        {{ editandoId() === null ? 'Nuevo Proveedor' : 'Editar Proveedor' }}
+      </h3>
 
       <form (ngSubmit)="guardar()">
         <div class="grid-row">
           <div class="field">
-            <label for="nit">NIT</label>
+            <label for="sup-nit">NIT</label>
             <input
-              id="nit"
+              id="sup-nit"
               type="text"
               name="nit"
               [(ngModel)]="form.nit"
               placeholder="900123456-7"
+              required
             />
           </div>
           <div class="field">
-            <label for="nombre">NOMBRE</label>
+            <label for="sup-nombre">NOMBRE</label>
             <input
-              id="nombre"
+              id="sup-nombre"
               type="text"
               name="nombre"
               [(ngModel)]="form.name"
               placeholder="Distribuidora ABC"
+              required
             />
           </div>
         </div>
 
         <div class="grid-row">
           <div class="field">
-            <label for="telefono">TELÉFONO</label>
+            <label for="sup-telefono">TELÉFONO</label>
             <input
-              id="telefono"
+              id="sup-telefono"
               type="text"
               name="telefono"
               [(ngModel)]="form.phone"
@@ -109,9 +120,9 @@
             />
           </div>
           <div class="field">
-            <label for="email">EMAIL</label>
+            <label for="sup-email">EMAIL</label>
             <input
-              id="email"
+              id="sup-email"
               type="email"
               name="email"
               [(ngModel)]="form.email"
@@ -121,9 +132,9 @@
         </div>
 
         <div class="field">
-          <label for="direccion">DIRECCIÓN</label>
+          <label for="sup-direccion">DIRECCIÓN</label>
           <input
-            id="direccion"
+            id="sup-direccion"
             type="text"
             name="direccion"
             [(ngModel)]="form.address"

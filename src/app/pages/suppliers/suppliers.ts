@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -31,7 +31,14 @@ export class Suppliers {
 
   form: SupplierPayload = this.formularioVacio();
 
+  // Diálogo de alta/edición: se usa para mover el foco y encerrar el Tab
+  private readonly dialogo = viewChild<ElementRef<HTMLElement>>('dialogoProveedor');
+
+  // Botón que abrió el diálogo: recupera el foco al cerrarlo
+  private elementoOrigen: HTMLElement | null = null;
+
   private timeoutRef: any;
+  private focoRef?: ReturnType<typeof setTimeout>;
 
   constructor() {
     this.supplierService.suppliers$.subscribe((data) => this.proveedores.set(data));
@@ -42,13 +49,15 @@ export class Suppliers {
     this.supplierService.recargar();
   }
 
-  abrirNuevo(): void {
+  abrirNuevo(evento?: Event): void {
+    this.recordarOrigen(evento);
     this.editandoId.set(null);
     this.form = this.formularioVacio();
-    this.modalAbierto.set(true);
+    this.abrirModal();
   }
 
-  abrirEditar(proveedor: Supplier): void {
+  abrirEditar(proveedor: Supplier, evento?: Event): void {
+    this.recordarOrigen(evento);
     this.editandoId.set(proveedor.id);
     this.form = {
       nit: proveedor.nit,
@@ -57,12 +66,59 @@ export class Suppliers {
       email: proveedor.email,
       address: proveedor.address
     };
-    this.modalAbierto.set(true);
+    this.abrirModal();
   }
 
   cerrarModal(): void {
+    const estabaAbierto = this.modalAbierto();
+
     this.modalAbierto.set(false);
     this.guardando.set(false);
+
+    // Se cancela el foco pendiente para que no se robe el foco ya devuelto
+    clearTimeout(this.focoRef);
+
+    if (estabaAbierto) {
+      this.devolverFoco();
+    }
+  }
+
+  /**
+   * Tab encierra el foco dentro del diálogo y Escape lo cierra, como exige
+   * cualquier diálogo modal para poder usarse solo con el teclado.
+   */
+  alPresionarTecla(evento: KeyboardEvent): void {
+    if (evento.key === 'Escape') {
+      evento.preventDefault();
+      this.cerrarModal();
+      return;
+    }
+
+    if (evento.key !== 'Tab') {
+      return;
+    }
+
+    const campos = this.camposEnfocables();
+
+    if (campos.length === 0) {
+      return;
+    }
+
+    const primero = campos[0];
+    const ultimo = campos[campos.length - 1];
+    const activo = evento.target as HTMLElement | null;
+
+    // Los extremos se envuelven: del último campo se vuelve al primero
+    if (evento.shiftKey && activo === primero) {
+      evento.preventDefault();
+      ultimo.focus();
+      return;
+    }
+
+    if (!evento.shiftKey && activo === ultimo) {
+      evento.preventDefault();
+      primero.focus();
+    }
   }
 
   guardar(): void {
@@ -166,6 +222,59 @@ export class Suppliers {
 
   private formularioVacio(): SupplierPayload {
     return { nit: '', name: '', phone: '', email: '', address: '' };
+  }
+
+  private abrirModal(): void {
+    this.modalAbierto.set(true);
+    this.enfocarPrimerCampo();
+  }
+
+  // El botón que dispara la acción (si el evento no lo trae, el foco actual)
+  private recordarOrigen(evento?: Event): void {
+    const origen = evento?.currentTarget as HTMLElement | null;
+
+    this.elementoOrigen =
+      origen ?? (document.activeElement as HTMLElement | null) ?? null;
+  }
+
+  /**
+   * El diálogo todavía no existe en el DOM cuando se abre: el foco se mueve
+   * en el siguiente ciclo, cuando ya está dibujado.
+   */
+  private enfocarPrimerCampo(): void {
+    clearTimeout(this.focoRef);
+
+    this.focoRef = setTimeout(() => {
+      const primero = this.camposEnfocables()[0];
+
+      if (primero) {
+        primero.focus();
+      }
+    });
+  }
+
+  private devolverFoco(): void {
+    const origen = this.elementoOrigen;
+
+    this.elementoOrigen = null;
+
+    if (origen && origen.isConnected) {
+      origen.focus();
+    }
+  }
+
+  private camposEnfocables(): HTMLElement[] {
+    const caja = this.dialogo()?.nativeElement;
+
+    if (!caja) {
+      return [];
+    }
+
+    const selector = 'input, select, textarea, button, a[href], [tabindex]:not([tabindex="-1"])';
+
+    return Array.from(caja.querySelectorAll<HTMLElement>(selector)).filter(
+      (elemento) => !elemento.hasAttribute('disabled')
+    );
   }
 
   private mensajeDeError(err: any, respaldo: string): string {
