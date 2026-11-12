@@ -73,19 +73,26 @@ thead th {
   text-transform: uppercase;
 }
 
-.etiqueta-estado[data-status='DISPONIBLE'] {
+.etiqueta-estado[data-status='Activo'] {
   background-color: var(--primary-soft);
   color: var(--primary-hover);
 }
 
-.etiqueta-estado[data-status='AGOTADO'] {
+.etiqueta-estado[data-status='Bajo stock'] {
+  background-color: var(--warning-soft);
+  color: var(--warning);
+}
+
+.etiqueta-estado[data-status='Sin stock'] {
   background-color: var(--danger-soft);
   color: var(--danger-hover);
 }
 
-.etiqueta-estado[data-status='VENCIDO'] {
+/* Vencido se distingue de Bajo stock con borde y texto de peligro */
+.etiqueta-estado[data-status='Vencido'] {
   background-color: var(--warning-soft);
-  color: var(--warning);
+  color: var(--danger-hover);
+  border: 1px solid var(--danger);
 }
 
 .vacio {

@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <section class="card">
+  <section class="card" [attr.aria-busy]="guardando()">
     <p class="section-title">DATOS DEL MEDICAMENTO</p>
     <div class="grid-formulario">
       <div class="field">
@@ -47,7 +47,7 @@
         <input type="number" [(ngModel)]="newMedicine.salePrice">
       </div>
       <div class="botones-inline">
-        <button class="btn btn-primary" (click)="registrar()">Registrar</button>
+        <button class="btn btn-primary" (click)="registrar()" [disabled]="guardando()">Registrar</button>
         <button class="btn btn-secondary" (click)="limpiar()">Limpiar</button>
       </div>
     </div>
@@ -97,8 +97,8 @@
   </section>
    
   <div class="botones-abajo">
-    <button class="btn btn-primary" (click)="actualizar()">Modificar</button>
-    <button class="btn btn-danger" (click)="borrar()">Eliminar</button>
+    <button class="btn btn-primary" (click)="actualizar()" [disabled]="guardando()">Modificar</button>
+    <button class="btn btn-danger" (click)="borrar()" [disabled]="guardando()">Eliminar</button>
     <button class="btn btn-secondary" (click)="irAlMenu()">Salir</button>
   </div>
 
