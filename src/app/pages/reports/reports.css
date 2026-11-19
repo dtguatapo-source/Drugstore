@@ -130,6 +130,9 @@
 /* ===== FILTROS ===== */
 .search-wrapper {
   position: relative;
+  /* Contexto propio para que el desplegable flote por encima de las
+     tarjetas de informe que vienen después en el DOM. */
+  z-index: 10;
 }
 
 .search-results .result-item {
@@ -220,6 +223,9 @@
 
 .report-card-box.filters-container {
   padding: 24px;
+  /* La tarjeta de filtros aloja el buscador desplegable: si hereda el
+     overflow del report-card-box, el desplegable queda recortado. */
+  overflow: visible;
 }
 
 .report-card-header {
