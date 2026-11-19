@@ -20,7 +20,7 @@ Angular 21 frontend for a drugstore ("Sistema Droguería Pili"). The NestJS + Po
 - Endpoints used: `POST /auth/login`, `POST /users`, `GET/POST/PATCH/DELETE /medicines`, `GET/POST /sales`, `GET/POST /customers`, `GET/POST /purchases`, `GET/POST /suppliers`.
 - Root services load data in their constructors and refresh after mutations (`loadMedicines`, `loadSales`, `loadPurchases`). Preserve this pattern rather than replacing it with local-only state.
 - Services contain adapters between backend DTOs and frontend models (nested sale/purchase items flattened, `keywords` string<->array, medicine status `DISPONIBLE`/`AGOTADO`/`VENCIDO`). Update the adapters if models change.
-- Auth: successful login stores `login`, `token`, and `user` in `localStorage`. `src/app/pages/auth.guard/auth.guard.ts` and `role.guard.ts` **are wired in `app.routes.ts`**: every private route (dashboard, inventory, sales, purchases, suppliers, reports) uses `authGuard`, and inventory, purchases, suppliers and reports also require `roleGuard('ADMIN')`. Add both guards to any new private route.
+- Auth: successful login stores `login`, `token`, and `user` in `localStorage`. `src/app/pages/auth.guard/auth.guard.ts` **is wired in `app.routes.ts`**: every private route (dashboard, inventory, sales, purchases, suppliers, reports) uses `authGuard`, which validates the JWT shape and its `exp` claim. There is no role guard: the drugstore has a single owner/administrator, so any authenticated session sees all six modules and the navbar badge reads "Administradora". Add `authGuard` to any new private route.
 - `AiService` calls Groq directly from the browser with a hardcoded API key; `environment.groqApiKey` is unused. Do not copy this pattern for new secrets.
 
 ## Conventions

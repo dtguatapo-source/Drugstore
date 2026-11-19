@@ -12,15 +12,11 @@
 
       <div class="LinksNav">
         <a class="nav-link" routerLink="/dashboard" routerLinkActive="activo">Inicio</a>
-        @if (esAdmin()) {
-          <a class="nav-link" routerLink="/inventory" routerLinkActive="activo">Inventario</a>
-          <a class="nav-link" routerLink="/purchases" routerLinkActive="activo">Compras</a>
-          <a class="nav-link" routerLink="/suppliers" routerLinkActive="activo">Proveedores</a>
-        }
+        <a class="nav-link" routerLink="/inventory" routerLinkActive="activo">Inventario</a>
+        <a class="nav-link" routerLink="/purchases" routerLinkActive="activo">Compras</a>
+        <a class="nav-link" routerLink="/suppliers" routerLinkActive="activo">Proveedores</a>
         <a class="nav-link" routerLink="/sales" routerLinkActive="activo">Ventas</a>
-        @if (esAdmin()) {
-          <a class="nav-link" routerLink="/reports" routerLinkActive="activo">Informes</a>
-        }
+        <a class="nav-link" routerLink="/reports" routerLinkActive="activo">Informes</a>
       </div>
 
       <button
@@ -30,7 +26,7 @@
         title="Cerrar sesión"
         aria-label="Cerrar sesión"
       >
-        <span class="admin-badge">{{ etiquetaRol() }}</span>
+        <span class="admin-badge">{{ etiquetaRol }}</span>
       </button>
 
     </nav>

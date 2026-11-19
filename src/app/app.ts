@@ -1,7 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { limpiarSesion, rolDeSesion } from './pages/auth.guard/auth.guard';
+import { limpiarSesion } from './pages/auth.guard/auth.guard';
 
 @Component({
   selector: 'app-root',
@@ -20,15 +20,10 @@ export class App {
   // MIGRACIÓN ANGULAR 21: Manejo del estado del layout mediante una Signal reactiva
   readonly mostrarLayout = signal<boolean>(false);
 
-  // Rol real tomado del JWT: la UI muestra solo lo que el backend va a permitir
-  readonly rol = signal<string | null>(rolDeSesion());
-  readonly esAdmin = computed(() => this.rol() === 'ADMIN');
-  readonly etiquetaRol = computed(() => {
-    const rol = this.rol();
-    if (rol === 'ADMIN') return 'Admin';
-    if (rol === 'USER') return 'Cajero';
-    return 'Usuario';
-  });
+  // La droguería la maneja una sola dueña/administradora, así que la interfaz
+  // muestra los seis módulos completos: el backend ya exige un JWT válido y no
+  // aplica restricciones por rol.
+  protected readonly etiquetaRol = 'Administradora';
 
   private readonly rutasSinMenu = ['/login', '/dashboard', '/register'];
 
@@ -48,8 +43,6 @@ export class App {
     const esRutaSinMenu = this.rutasSinMenu.some(ruta => url.startsWith(ruta));
     // MIGRACIÓN ANGULAR 21: Actualización de la signal usando .set()
     this.mostrarLayout.set(!esRutaSinMenu);
-    // El token puede cambiar entre navegaciones (login, logout, vencimiento)
-    this.rol.set(rolDeSesion());
   }
 
   salir(): void {

@@ -7,6 +7,14 @@ import { App } from './app';
 @Component({ standalone: true, template: '' })
 class RutaVacia {}
 
+/** JWT armado a mano: la app solo lee `exp` y `role`, nunca verifica la firma. */
+function tokenConRol(rol: string, segundosDeVida = 600): string {
+  const payload = btoa(
+    JSON.stringify({ exp: Math.floor(Date.now() / 1000) + segundosDeVida, role: rol })
+  );
+  return `cabecera.${payload}.firma`;
+}
+
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -32,6 +40,29 @@ describe('App', () => {
     expect(compiled.querySelector('.nombre-sistema')?.textContent).toContain(
       'SISTEMA DROGUERÍA PILI'
     );
+  });
+
+  it('should show the six modules and the Administradora badge to any session', () => {
+    // La droguería tiene una sola administradora: no hay módulos ocultos por rol
+    localStorage.setItem('login', 'pili');
+    localStorage.setItem('token', tokenConRol('USER'));
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const enlaces = Array.from(compiled.querySelectorAll('.nav-link')).map((enlace) =>
+      enlace.getAttribute('href')
+    );
+
+    expect(enlaces).toEqual([
+      '/dashboard',
+      '/inventory',
+      '/purchases',
+      '/suppliers',
+      '/sales',
+      '/reports'
+    ]);
+    expect(compiled.querySelector('.admin-badge')?.textContent?.trim()).toBe('Administradora');
   });
 
   it('should clear every session key and go to /login on logout', async () => {
