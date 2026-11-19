@@ -46,13 +46,16 @@ ng test
 
 ## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
+There is no end-to-end suite yet: no Playwright/Cypress dependency and no `e2e` script in
+`package.json`, so `ng e2e` does not work. What exists are unit specs run with Vitest under
+jsdom:
 
 ```bash
-ng e2e
+npx ng test --watch=false
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+If an e2e suite is added, update this section with its real command instead of leaving the
+Angular default text here.
 
 ## Additional Resources
 
