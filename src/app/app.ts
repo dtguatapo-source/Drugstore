@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { limpiarSesion } from './pages/auth.guard/auth.guard';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,11 @@ export class App {
 
   // MIGRACIÓN ANGULAR 21: Manejo del estado del layout mediante una Signal reactiva
   readonly mostrarLayout = signal<boolean>(false);
+
+  // La droguería la maneja una sola dueña/administradora, así que la interfaz
+  // muestra los seis módulos completos: el backend ya exige un JWT válido y no
+  // aplica restricciones por rol.
+  protected readonly etiquetaRol = 'Administradora';
 
   private readonly rutasSinMenu = ['/login', '/dashboard', '/register'];
 
@@ -40,8 +46,8 @@ export class App {
   }
 
   salir(): void {
-    // Eliminar sesión
-    localStorage.removeItem('login');
+    // Eliminar la sesión completa: login, token y usuario
+    limpiarSesion();
     this.router.navigate(['/login']);
   }
 }

@@ -1,0 +1,165 @@
+<div class="suppliers-container">
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
+  <div class="card encabezado">
+    <div>
+      <h2>Proveedores</h2>
+      <p class="subtitulo">
+        {{ proveedores().length }} {{ proveedores().length === 1 ? 'proveedor registrado' : 'proveedores registrados' }}
+      </p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="abrirNuevo($event)">
+      + Nuevo Proveedor
+    </button>
+  </div>
+
+  <div class="card">
+    <p class="section-title">LISTADO DE PROVEEDORES</p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>NIT</th>
+            <th>NOMBRE</th>
+            <th>TELÉFONO</th>
+            <th>EMAIL</th>
+            <th>DIRECCIÓN</th>
+            <th class="col-acciones">ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (proveedor of proveedores(); track proveedor.id) {
+            <tr>
+              <td>{{ proveedor.nit }}</td>
+              <td>{{ proveedor.name }}</td>
+              <td>{{ proveedor.phone || '—' }}</td>
+              <td>{{ proveedor.email || '—' }}</td>
+              <td>{{ proveedor.address || '—' }}</td>
+              <td class="acciones">
+                <button type="button" class="btn btn-secondary" (click)="abrirEditar(proveedor, $event)">
+                  Editar
+                </button>
+                <button type="button" class="btn btn-danger" (click)="eliminar(proveedor)"
+                  [disabled]="borrando() === proveedor.id">
+                  {{ borrando() === proveedor.id ? 'Eliminando...' : 'Eliminar' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="vacio">No hay proveedores registrados</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer-actions">
+    <button type="button" class="btn btn-secondary" (click)="regresar()">
+      Volver al panel
+    </button>
+  </div>
+</div>
+
+@if (modalAbierto()) {
+  <div class="overlay">
+    <div
+      #dialogoProveedor
+      class="modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sup-dialogo-titulo"
+      (keydown)="alPresionarTecla($event)"
+    >
+      <h3 id="sup-dialogo-titulo">
+        {{ editandoId() === null ? 'Nuevo Proveedor' : 'Editar Proveedor' }}
+      </h3>
+
+      <form (ngSubmit)="guardar()">
+        <div class="grid-row">
+          <div class="field">
+            <label for="sup-nit">NIT</label>
+            <input
+              id="sup-nit"
+              type="text"
+              name="nit"
+              [(ngModel)]="form.nit"
+              placeholder="900123456-7"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="sup-nombre">NOMBRE</label>
+            <input
+              id="sup-nombre"
+              type="text"
+              name="nombre"
+              [(ngModel)]="form.name"
+              placeholder="Distribuidora ABC"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="grid-row">
+          <div class="field">
+            <label for="sup-telefono">TELÉFONO</label>
+            <input
+              id="sup-telefono"
+              type="text"
+              name="telefono"
+              [(ngModel)]="form.phone"
+              placeholder="300 000 0000"
+            />
+          </div>
+          <div class="field">
+            <label for="sup-email">EMAIL</label>
+            <input
+              id="sup-email"
+              type="email"
+              name="email"
+              [(ngModel)]="form.email"
+              placeholder="contacto@proveedor.com"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="sup-direccion">DIRECCIÓN</label>
+          <input
+            id="sup-direccion"
+            type="text"
+            name="direccion"
+            [(ngModel)]="form.address"
+            placeholder="Calle 00 #00-00"
+          />
+        </div>
+
+        <div class="modal-acciones">
+          <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (mensaje()) {
+  <div class="overlay">
+    <div class="alert-box" [class.error]="error()" [class.ok]="!error()">
+      <p>{{ mensaje() }}</p>
+      <button type="button" (click)="cerrarAlerta()">OK</button>
+    </div>
+  </div>
+}

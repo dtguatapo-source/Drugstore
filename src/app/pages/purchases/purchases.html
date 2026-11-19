@@ -1,20 +1,67 @@
 <div class="purchase-container">
   <h2>Registro de Compras</h2>
 
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
   <div class="card">
     <p class="section-title">DATOS DE LA COMPRA</p>
     <div class="grid-row">
       <div class="field">
-        <label>FECHA</label>
-        <input type="date" [(ngModel)]="newPurchase.date">
+        <label for="pur-fecha">FECHA</label>
+        <input
+          id="pur-fecha"
+          type="date"
+          [(ngModel)]="newPurchase.date"
+          [min]="fechaMinima"
+          [max]="fechaHoy"
+          required
+        >
+      </div>
+      <div class="field proveedor-field">
+        <label for="pur-proveedor">PROVEEDOR</label>
+        <input
+          id="pur-proveedor"
+          type="text"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls="pur-lista-proveedores"
+          [attr.aria-expanded]="mostrarSugerencias()"
+          [attr.aria-activedescendant]="opcionActivaId()"
+          [(ngModel)]="newPurchase.provider"
+          (input)="onProveedorInput()"
+          (focus)="filtrarProveedores()"
+          (blur)="ocultarSugerencias()"
+          (keydown)="alPresionarTeclaProveedor($event)"
+          placeholder="Escriba para buscar un proveedor"
+          autocomplete="off"
+          required
+        >
+        @if (mostrarSugerencias() && sugerencias().length) {
+          <ul class="sugerencias" id="pur-lista-proveedores" role="listbox" aria-label="Proveedores sugeridos">
+            @for (proveedor of sugerencias(); track proveedor.id; let i = $index) {
+              <li
+                id="pur-opcion-{{ i }}"
+                role="option"
+                [attr.aria-selected]="i === indiceActivo()"
+                [class.activo]="i === indiceActivo()"
+                (mousedown)="$event.preventDefault()"
+                (click)="seleccionarProveedor(proveedor)"
+              >
+                <span class="sugerencia-nombre">{{ proveedor.name }}</span>
+                <span class="sugerencia-nit">{{ proveedor.nit }}</span>
+              </li>
+            }
+          </ul>
+        }
       </div>
       <div class="field">
-        <label>PROVEEDOR</label>
-        <input type="text" [(ngModel)]="newPurchase.provider" placeholder="Nombre del proveedor">
-      </div>
-      <div class="field">
-        <label>N° FACTURA</label>
-        <input type="text" [(ngModel)]="newPurchase.invoiceNumber" placeholder="Numero de factura">
+        <label for="pur-factura">N° FACTURA (AUTOMÁTICO)</label>
+        <input id="pur-factura" type="text" [value]="newPurchase.invoiceNumber" readonly>
       </div>
     </div>
   </div>
@@ -24,8 +71,14 @@
 
     <div class="grid-row">
       <div class="field">
-        <label>SELECCIONAR</label>
-        <select class="form-select" [(ngModel)]="newPurchase.medicineId" (change)="buscarMed()">
+        <label for="pur-medicamento">SELECCIONAR</label>
+        <select
+          id="pur-medicamento"
+          class="form-select"
+          [(ngModel)]="newPurchase.medicineId"
+          (change)="buscarMed()"
+          required
+        >
           <option value="">Seleccione un producto</option>
           @for (med of listaMedicamentos(); track med.id) {
             <option [value]="med.id">
@@ -35,31 +88,55 @@
         </select>
       </div>
       <div class="field">
-        <label>NOMBRE</label>
-        <input type="text" [value]="medEncontrado()?.name || ''" readonly>
+        <label for="pur-nombre">NOMBRE</label>
+        <input id="pur-nombre" type="text" [value]="medEncontrado()?.name || ''" readonly>
       </div>
       <div class="field">
-        <label>LABORATORIO</label>
-        <input type="text" [value]="medEncontrado()?.laboratory || ''" readonly>
+        <label for="pur-laboratorio">LABORATORIO</label>
+        <input id="pur-laboratorio" type="text" [value]="medEncontrado()?.laboratory || ''" readonly>
       </div>
     </div>
 
-    <div class="grid-row" style="margin-top: 25px;">
+    <div class="grid-row separacion-superior">
       <div class="field">
-        <label>CANTIDAD</label>
-        <input type="number" [(ngModel)]="newPurchase.quantity">
+        <label for="pur-cantidad">CANTIDAD</label>
+        <input
+          id="pur-cantidad"
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="newPurchase.quantity"
+          required
+        >
       </div>
       <div class="field">
-        <label>PRECIO COMPRA</label>
-        <input type="number" [(ngModel)]="newPurchase.purchasePrice">
+        <label for="pur-precio-compra">PRECIO COMPRA</label>
+        <input
+          id="pur-precio-compra"
+          type="number"
+          min="0"
+          step="0.01"
+          [(ngModel)]="newPurchase.purchasePrice"
+        >
       </div>
       <div class="field">
-        <label>PRECIO VENTA</label>
-        <input type="number" [(ngModel)]="newPurchase.salePrice">
+        <label for="pur-precio-venta">PRECIO VENTA</label>
+        <input
+          id="pur-precio-venta"
+          type="number"
+          min="0"
+          step="0.01"
+          [(ngModel)]="newPurchase.salePrice"
+        >
       </div>
 
       <div class="field-button">
-        <button type="button" class="btn-add-circle" (click)="meterALista()">
+        <button
+          type="button"
+          class="btn-add-circle"
+          aria-label="Agregar producto a la lista"
+          (click)="meterALista()"
+        >
           +
         </button>
       </div>
@@ -94,7 +171,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" style="text-align: center; padding: 20px;">
+              <td colspan="7" class="vacio">
                 No hay productos en la lista
               </td>
             </tr>
@@ -105,10 +182,10 @@
   </div>
 
   <div class="footer-actions">
-    <button class="btn-save" (click)="guardarCompra()">
+    <button class="btn btn-primary" (click)="guardarCompra()" [disabled]="guardando()">
       Guardar Datos
     </button>
-    <button class="btn-exit" (click)="regresar()">
+    <button class="btn btn-secondary" (click)="regresar()">
       Volver
     </button>
   </div>

@@ -1,4 +1,5 @@
-import { Component, inject, ChangeDetectorRef, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SalesService } from '../../services/sales.service';
 import { MedicineService } from '../../services/medicine.service';
 import { Sale } from '../../models/sale';
@@ -6,13 +7,13 @@ import { Medicine } from '../../models/medicine';
 import { Observable } from 'rxjs';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AiService } from '../../services/ai.service';
+import { EstadoCarga } from '../../shared/estado-carga/estado-carga';
 
 @Component({
   selector: 'app-sales',
   standalone: true,
   // MIGRACIÓN ANGULAR 21: Importación directa de DecimalPipe y FormsModule
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, EstadoCarga],
   templateUrl: './sales.html',
   styleUrl: './sales.css'
 })
@@ -20,8 +21,6 @@ export class Sales {
   // MIGRACIÓN ANGULAR 21: Inyección moderna con inject()
   private readonly salesService = inject(SalesService);
   private readonly medicineService = inject(MedicineService);
-  private readonly aiService = inject(AiService);
-  private readonly cdr = inject(ChangeDetectorRef);
 
   // MIGRACIÓN ANGULAR 21: Manejo del estado usando Signals
   readonly mensaje = signal<string>('');
@@ -30,28 +29,23 @@ export class Sales {
   readonly filteredMedicines = signal<any[]>([]);
   readonly cart = signal<any[]>([]);
   readonly selectedMedicine = signal<any | undefined>(undefined);
-  readonly discount = signal<number>(0); // 👈 Signal para el descuento aplicado
 
-  // IA CHAT Signals
-  readonly iaQuery = signal<string>('');
-  readonly chatMessages = signal<any[]>([
-    {
-      sender: 'ia',
-      text: ' Hola, soy tu asistente virtual de farmacia. ¿Cómo puedo ayudarte hoy?'
-    }
-  ]);
-  readonly loadingIa = signal<boolean>(false);
-  readonly textIaOpen = signal<boolean>(false);
+  // Estado de la carga (S7): esta pantalla depende de las ventas y de los medicamentos
+  private readonly cargandoVentas = toSignal(this.salesService.cargando$, { initialValue: false });
+  private readonly cargandoMedicamentos = toSignal(this.medicineService.cargando$, {
+    initialValue: false
+  });
+  private readonly errorVentas = toSignal(this.salesService.errorCarga$, { initialValue: '' });
+  private readonly errorMedicamentos = toSignal(this.medicineService.errorCarga$, {
+    initialValue: ''
+  });
+
+  readonly cargando = computed(() => this.cargandoVentas() || this.cargandoMedicamentos());
+  readonly errorCarga = computed(() => this.errorVentas() || this.errorMedicamentos());
 
   // 👈 Suma numérica garantizada del subtotal de cada producto en el carrito
   readonly totalCart = computed(() => {
     return this.cart().reduce((acc, item) => acc + (Number(item.subtotal) || 0), 0);
-  });
-
-  // 👈 Total final restando el descuento aplicado
-  readonly totalACobrar = computed(() => {
-    const desc = Number(this.discount()) || 0;
-    return Math.max(0, this.totalCart() - desc);
   });
 
   sales$: Observable<Sale[]>;
@@ -74,6 +68,12 @@ export class Sales {
     this.medicineService.medicines$.subscribe(data => {
       this.medicines.set(data);
     });
+  }
+
+  // Vuelve a pedir las ventas y los medicamentos a PostgreSQL
+  reintentar(): void {
+    this.salesService.loadSales();
+    this.medicineService.loadMedicines();
   }
 
   // BUSCADOR
@@ -133,7 +133,7 @@ export class Sales {
       return;
     }
 
-    // 👈 Creamos un nuevo arreglo para que totalCart() y totalACobrar() se actualicen al instante
+    // 👈 Creamos un nuevo arreglo para que totalCart() se actualice al instante
     this.cart.update(prev => [
       ...prev,
       {
@@ -165,17 +165,14 @@ export class Sales {
       return;
     }
 
-    const descuentoNum = Number(this.discount()) || 0;
-
     this.salesService
-      .registrarVentaEnBackend(this.customer, this.cart(), descuentoNum)
+      .registrarVentaEnBackend(this.customer, this.cart())
       .subscribe({
         next: () => {
           this.medicineService.loadMedicines();
 
           // Limpiar carrito y formulario
           this.cart.set([]);
-          this.discount.set(0);
           this.searchText = '';
           this.filteredMedicines.set([]);
           this.selectedMedicine.set(undefined);
@@ -199,30 +196,6 @@ export class Sales {
           );
         }
       });
-  }
-
-  // CHAT IA
-  async consultarIA(): Promise<void> {
-    const query = this.iaQuery();
-    if (!query.trim()) {
-      this.mostrarAlerta('Por favor escribe un mensaje', true);
-      return;
-    }
-
-    this.chatMessages.update(prev => [...prev, { sender: 'user', text: query }]);
-    this.loadingIa.set(true);
-    this.cdr.detectChanges();
-
-    try {
-      const respuestaIA = await this.aiService.recomendarMedicamento(query, this.medicines());
-      this.chatMessages.update(prev => [...prev, { sender: 'ia', text: respuestaIA }]);
-      this.iaQuery.set('');
-    } catch (e) {
-      this.mostrarAlerta('Ocurrio un error con la IA', true);
-    } finally {
-      this.loadingIa.set(false);
-      this.cdr.detectChanges();
-    }
   }
 
   // ALERTAS

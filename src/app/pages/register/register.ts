@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms'; 
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http'; // 👈 1. Importamos HttpClient para conectar con el backend
+import { environment } from '../../../environments/environments';
 
 @Component({
   selector: 'app-register',
@@ -45,7 +46,7 @@ export class Register {
       confirmPassword: this.confirmarPass.trim(),
     };
 
-    this.http.post<any>('http://localhost:3000/users', datosRegistro).subscribe({
+    this.http.post<any>(`${environment.apiBase}/users`, datosRegistro).subscribe({
       next: (res) => {
         // 👈 Éxito: el backend guardó el usuario en PostgreSQL a través de Prisma
         console.log('Usuario registrado con éxito:', res);

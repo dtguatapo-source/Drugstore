@@ -1,62 +1,110 @@
+<!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+<app-estado-carga
+  [cargando]="cargando()"
+  [error]="errorCarga()"
+  (reintentar)="reintentar()"
+/>
+
 <!-- header principal -->
 <div class="header-seccion">
-
-  <!-- logo pequeño -->
+  <!-- logo pequeno -->
   <div class="logo-pequeno">
-    <img src="iconos/flor.png" alt="logo">
+    <img src="iconos/flor.png" alt="Logo de Droguería Pili" />
   </div>
 
   <!-- textos -->
   <div class="texto-header">
     <h1 class="titulo">Bienvenida al sistema</h1>
-    <p class="subtitulo">Seleccione un modulo para continuar</p>
+    <p class="subtitulo">Seleccione un módulo para continuar</p>
   </div>
-  
+
   <!-- usuario -->
   <div class="user-section">
-    <span class="admin">Admin</span>
-    <button class="logout" (click)="salir()">Salir</button>
+    <span class="admin">Administradora</span>
+    <button type="button" class="logout" (click)="salir()">Salir</button>
   </div>
-
 </div>
 
-<!-- tarjetas -->
+<!-- modulos -->
 <div class="contenedor">
-
   <!-- inventario -->
-  <div class="card" routerLink="/inventory">
-    <div class="icono inventario">
-      <img src="iconos/cajita.png" alt="inventario">
+  <a class="card module-card" routerLink="/inventory">
+    <div class="module-icon inventario">
+      <img src="iconos/cajita.png" alt="" />
     </div>
     <h3>Inventario</h3>
-    <p>Aqui puede ver y manejar los productos</p>
-  </div>
+    <p>Aquí puede ver y manejar los productos</p>
+    <span class="module-action">Ingresar <span aria-hidden="true">→</span></span>
+  </a>
 
   <!-- compras -->
-  <div class="card" routerLink="/purchases">
-    <div class="icono compras">
-      <img src="iconos/carrito.png" alt="compras">
+  <a class="card module-card" routerLink="/purchases">
+    <div class="module-icon compras">
+      <img src="iconos/carrito.png" alt="" />
     </div>
     <h3>Compras</h3>
-    <p>Aqui registra las compras de la drogueria</p>
-  </div>
+    <p>Aquí registra las compras de la droguería</p>
+    <span class="module-action">Ingresar <span aria-hidden="true">→</span></span>
+  </a>
 
   <!-- ventas -->
-  <div class="card" routerLink="/sales">
-    <div class="icono ventas">
-      <img src="iconos/venta.png" alt="ventas">
+  <a class="card module-card" routerLink="/sales">
+    <div class="module-icon ventas">
+      <img src="iconos/venta.png" alt="" />
     </div>
     <h3>Ventas</h3>
     <p>Control de las ventas realizadas</p>
-  </div>
+    <span class="module-action">Ingresar <span aria-hidden="true">→</span></span>
+  </a>
 
   <!-- informes -->
-  <div class="card" routerLink="/reports">
-    <div class="icono informes">
-      <img src="iconos/informe.png" alt="informes">
+  <a class="card module-card" routerLink="/reports">
+    <div class="module-icon informes">
+      <img src="iconos/informe.png" alt="" />
     </div>
     <h3>Informes</h3>
     <p>Reportes del negocio</p>
-  </div>
+    <span class="module-action">Ingresar <span aria-hidden="true">→</span></span>
+  </a>
 
+  <!-- proveedores -->
+  <a class="card module-card" routerLink="/suppliers">
+    <div class="module-icon proveedores">
+      <span class="module-emoji" aria-hidden="true">🚚</span>
+    </div>
+    <h3>Proveedores</h3>
+    <p>Administración de proveedores registrados</p>
+    <span class="module-action">Ingresar <span aria-hidden="true">→</span></span>
+  </a>
 </div>
+
+<!-- resumen rapido del dia -->
+<section class="card resumen-card">
+  <h2 class="section-title">Resumen Rápido del Día</h2>
+
+  <div class="resumen-grid">
+    <div class="resumen-item">
+      <span class="resumen-icon" aria-hidden="true">🛒</span>
+      <div class="resumen-texto">
+        <span class="resumen-valor">{{ ventasHoy() }}</span>
+        <span class="resumen-label">Ventas realizadas hoy</span>
+      </div>
+    </div>
+
+    <div class="resumen-item">
+      <span class="resumen-icon" aria-hidden="true">📦</span>
+      <div class="resumen-texto">
+        <span class="resumen-valor">{{ totalCatalogo() }}</span>
+        <span class="resumen-label">Medicamentos en catálogo</span>
+      </div>
+    </div>
+
+    <div class="resumen-item">
+      <span class="resumen-icon" aria-hidden="true">⚠️</span>
+      <div class="resumen-texto">
+        <span class="resumen-valor">{{ alertasStock() }}</span>
+        <span class="resumen-label">Alertas de stock bajo</span>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,53 +1,65 @@
 <div class="inventory-container">
 
+  <!-- Aviso de carga / error del backend: es lo primero que ve el usuario -->
+  <app-estado-carga
+    [cargando]="cargando()"
+    [error]="errorCarga()"
+    (reintentar)="reintentar()"
+  />
+
   <div class="header-seccion">
     <h2>Gestión de Inventario</h2>
 
     <div class="caja-busqueda">
-      <input type="text" placeholder="Filtrar por nombre o ID..." (input)="buscar($event)">
+      <input
+        type="text"
+        placeholder="Filtrar por nombre o ID..."
+        aria-label="Filtrar inventario por nombre o ID"
+        (input)="buscar($event)"
+      >
     </div>
   </div>
 
-  <section class="tarjeta-blanca">
-    <p class="titulo-gris">DATOS DEL MEDICAMENTO</p>
+  <section class="card" [attr.aria-busy]="guardando()">
+    <p class="section-title">DATOS DEL MEDICAMENTO</p>
     <div class="grid-formulario">
-      <div class="campo">
-        <label>ID / CODIGO</label>
-        <input type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automático">
+      <div class="field">
+        <label for="inv-id">ID / CODIGO</label>
+        <input id="inv-id" type="text" [(ngModel)]="newMedicine.id" readonly placeholder="Automático">
       </div>
-      <div class="campo grande">
-        <label>NOMBRE COMERCIAL</label>
-        <input type="text" [(ngModel)]="newMedicine.name">
+      <div class="field grande">
+        <label for="inv-nombre">NOMBRE COMERCIAL</label>
+        <input id="inv-nombre" type="text" [(ngModel)]="newMedicine.name" required>
       </div>
-      <div class="campo">
-        <label>LABORATORIO</label>
-        <input type="text" [(ngModel)]="newMedicine.laboratory">
+      <div class="field">
+        <label for="inv-laboratorio">LABORATORIO</label>
+        <input id="inv-laboratorio" type="text" [(ngModel)]="newMedicine.laboratory" required>
       </div>
-      <div class="campo grande">
-        <label>DESCRIPCIÓN</label>
-        <input type="text" [(ngModel)]="newMedicine.description">
+      <div class="field grande">
+        <label for="inv-descripcion">DESCRIPCIÓN</label>
+        <input id="inv-descripcion" type="text" [(ngModel)]="newMedicine.description">
       </div>
-      <div class="campo">
-        <label>STOCK</label>
-        <input type="number" [(ngModel)]="newMedicine.stock">
+      <div class="field">
+        <label for="inv-stock">STOCK</label>
+        <input id="inv-stock" type="number" min="0" step="1" [(ngModel)]="newMedicine.stock" required>
       </div>
-      <div class="campo">
-        <label>PRECIO COMPRA</label>
-        <input type="number" [(ngModel)]="newMedicine.purchasePrice">
+      <div class="field">
+        <label for="inv-precio-compra">PRECIO COMPRA</label>
+        <input id="inv-precio-compra" type="number" min="0" step="0.01" [(ngModel)]="newMedicine.purchasePrice" required>
       </div>
-      <div class="campo">
-        <label>PRECIO VENTA</label>
-        <input type="number" [(ngModel)]="newMedicine.salePrice">
+      <div class="field">
+        <label for="inv-precio-venta">PRECIO VENTA</label>
+        <input id="inv-precio-venta" type="number" min="0" step="0.01" [(ngModel)]="newMedicine.salePrice" required>
       </div>
       <div class="botones-inline">
-        <button class="btn btn-reg" (click)="registrar()">Registrar</button>
-        <button class="btn btn-clear" (click)="limpiar()">Limpiar</button>
+        <button class="btn btn-primary" (click)="registrar()" [disabled]="guardando()">Registrar</button>
+        <button class="btn btn-secondary" (click)="limpiar()">Limpiar</button>
       </div>
     </div>
   </section>
 
-  <section class="tarjeta-blanca">
-    <p class="titulo-gris">INVENTARIO ACTUAL</p>
+  <section class="card">
+    <p class="section-title">INVENTARIO ACTUAL</p>
     <div class="tabla-scroll">
       <table>
         <thead>
@@ -65,9 +77,25 @@
         <tbody>
           <!-- Uso de @for moderno de Angular 21 -->
           @for (m of listaFiltrada(); track m.id) {
-            <tr (click)="seleccionar(m)" style="cursor: pointer;">
+            <tr
+              (click)="seleccionar(m)"
+              (keydown)="alPresionarTecla($event, m)"
+              class="fila-clicable"
+              tabindex="0"
+              [attr.aria-selected]="newMedicine.id === m.id"
+            >
               <td>{{ m.id }}</td>
-              <td>{{ m.name }}</td>
+              <td>
+                <!-- Botón real: Modificar/Eliminar quedan al alcance del teclado -->
+                <button
+                  type="button"
+                  class="btn-nombre-medicamento"
+                  [attr.aria-label]="'Seleccionar ' + m.name"
+                  (click)="seleccionar(m)"
+                >
+                  {{ m.name }}
+                </button>
+              </td>
               <td>{{ m.laboratory }}</td>
               <td>{{ m.description }}</td> 
               <td>{{ m.stock }}</td>
@@ -90,9 +118,9 @@
   </section>
    
   <div class="botones-abajo">
-    <button class="btn btn-mod" (click)="actualizar()">Modificar</button>
-    <button class="btn btn-del" (click)="borrar()">Eliminar</button>
-    <button class="btn btn-exit" (click)="irAlMenu()">Salir</button>
+    <button class="btn btn-primary" (click)="actualizar()" [disabled]="guardando()">Modificar</button>
+    <button class="btn btn-danger" (click)="borrar()" [disabled]="guardando()">Eliminar</button>
+    <button class="btn btn-secondary" (click)="irAlMenu()">Salir</button>
   </div>
 
   <!-- Control Flow @if moderno de Angular 21 -->

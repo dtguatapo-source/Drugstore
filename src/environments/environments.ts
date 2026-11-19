@@ -1,4 +1,6 @@
 export const environment = {
   production: false,
-  groqApiKey: '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'
+  // Base única del backend NestJS: cualquier URL de la API se arma desde acá,
+  // así el paso a producción se hace en un solo lugar.
+  apiBase: 'http://localhost:3000'
 };

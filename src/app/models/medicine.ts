@@ -13,5 +13,6 @@ export interface Medicine {
   purchasePrice: number;
   salePrice: number;
 
-  status?: 'Activo' | 'Bajo stock' | 'Sin stock' | 'DISPONIBLE' | 'AGOTADO' | 'VENCIDO';
+  // 'Vencido' lo decide el backend (allí vive expiryDate); el resto se deriva del stock
+  status?: 'Activo' | 'Bajo stock' | 'Sin stock' | 'Vencido';
 }

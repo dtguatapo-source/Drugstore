@@ -3,18 +3,21 @@ import { Login } from './pages/login/login';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Inventory } from './pages/inventory/inventory';
 import { Sales } from './pages/sales/sales';
-import { Purchases} from './pages/purchases/purchases';
-import { Reports} from './pages/reports/reports';
-import { Register } from './pages/register/register'; 
+import { Purchases } from './pages/purchases/purchases';
+import { Reports } from './pages/reports/reports';
+import { Register } from './pages/register/register';
+import { Suppliers } from './pages/suppliers/suppliers';
+import { authGuard } from './pages/auth.guard/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' }, 
-  { path: 'login', component: Login }, 
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: Login },
   { path: 'register', component: Register },
-  { path: 'dashboard', component: Dashboard },
-  { path: 'inventory', component: Inventory },
-  { path: 'sales', component: Sales },
-  { path: 'purchases', component: Purchases },
-  { path: 'reports', component: Reports },
+  { path: 'dashboard', component: Dashboard, canActivate: [authGuard] },
+  { path: 'inventory', component: Inventory, canActivate: [authGuard] },
+  { path: 'sales', component: Sales, canActivate: [authGuard] },
+  { path: 'purchases', component: Purchases, canActivate: [authGuard] },
+  { path: 'suppliers', component: Suppliers, canActivate: [authGuard] },
+  { path: 'reports', component: Reports, canActivate: [authGuard] },
   { path: '**', redirectTo: 'login' }
 ];

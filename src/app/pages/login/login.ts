@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http'; // 👈 1. Importamos HttpClient
+import { environment } from '../../../environments/environments';
 
 @Component({
   selector: 'app-login',
@@ -31,13 +32,14 @@ export class Login {
 
     // Validaciones básicas
     if (!user || !pass) {
+      this.intento.set(false);
       this.mensaje.set('Complete todos los campos');
       this.error.set(true);
       return;
     }
 
     // 👈 3. Petición POST directa al Backend (puerto 3000)
-    this.http.post<any>('http://localhost:3000/auth/login', {
+    this.http.post<any>(`${environment.apiBase}/auth/login`, {
       username: user,
       password: pass
     }).subscribe({
@@ -48,6 +50,7 @@ export class Login {
       error: (err) => {
         // Error: el backend devolvió 401 (credenciales incorrectas) o no hay conexión
         console.error('Error en login:', err);
+        this.intento.set(false);
         if (err.status === 0) {
           this.mensaje.set('No se pudo conectar con el servidor (backend apagado o error de CORS)');
         } else {
@@ -59,12 +62,23 @@ export class Login {
   }
 
   entrarAlSistema(res: any): void {
+    const token = res?.access_token;
+
+    // Un login sin token no es un login: si lo guardamos como "undefined", el
+    // guard rechaza la sesión después y el usuario vuelve acá sin saber por qué.
+    if (typeof token !== 'string' || token.trim() === '') {
+      this.intento.set(false);
+      this.error.set(true);
+      this.mensaje.set('El servidor no devolvió una sesión válida. Intente nuevamente.');
+      return;
+    }
+
     this.error.set(false);
     this.mensaje.set('');
 
     // Guardamos la sesión y el token JWT devuelto por el backend
     localStorage.setItem('login', 'true');
-    localStorage.setItem('token', res.access_token);
+    localStorage.setItem('token', token);
     if (res.user) {
       localStorage.setItem('user', JSON.stringify(res.user));
     }
