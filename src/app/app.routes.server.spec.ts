@@ -16,14 +16,14 @@ describe('serverRoutes', () => {
     }
   });
 
-  it('mantiene prerenderizadas las páginas públicas, que no dependen de la base', () => {
-    for (const path of ['login', 'register']) {
-      const ruta = serverRoutes.find((serverRoute) => serverRoute.path === path);
+  it('mantiene prerenderizado el login, que no depende de la base', () => {
+    const ruta = serverRoutes.find((serverRoute) => serverRoute.path === 'login');
 
-      expect(ruta?.renderMode, `"${path}" debería seguir prerenderizándose`).toBe(
-        RenderMode.Prerender,
-      );
-    }
+    expect(ruta?.renderMode, '"login" debería seguir prerenderizándose').toBe(RenderMode.Prerender);
+  });
+
+  it('no deja ninguna entrada para la página de registro eliminada', () => {
+    expect(serverRoutes.some((serverRoute) => serverRoute.path === 'register')).toBe(false);
   });
 
   it('el comodín final no prerenderiza, porque cubre cualquier ruta desconocida', () => {

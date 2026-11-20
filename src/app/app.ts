@@ -25,7 +25,7 @@ export class App {
   // aplica restricciones por rol.
   protected readonly etiquetaRol = 'Administradora';
 
-  private readonly rutasSinMenu = ['/login', '/dashboard', '/register'];
+  private readonly rutasSinMenu = ['/login', '/dashboard'];
 
   constructor() {
     // Validar ruta inicial

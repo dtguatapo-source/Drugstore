@@ -24,8 +24,9 @@ describe('app.routes', () => {
     }
   });
 
-  it('should leave login and register public', () => {
+  it('should keep login public and expose no register route', () => {
+    // La droguería la maneja una sola administradora: no hay pantalla pública de registro
     expect(rutaDe('login').canActivate).toBeUndefined();
-    expect(rutaDe('register').canActivate).toBeUndefined();
+    expect(routes.some((ruta) => ruta.path === 'register')).toBe(false);
   });
 });

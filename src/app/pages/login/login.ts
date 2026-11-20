@@ -86,8 +86,4 @@ export class Login {
     // Redirigimos al panel principal
     this.router.navigate(['/dashboard']);
   }
-
-  irARegistro(): void {
-    this.router.navigate(['/register']);
-  }
 }
