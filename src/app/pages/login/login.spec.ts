@@ -60,16 +60,6 @@ describe('Login', () => {
     expect(component.error()).toBe(true);
   });
 
-  it('should not invite the user to register anywhere on the form', () => {
-    // Una sola administradora: no existe pantalla pública de registro
-    const fixture = TestBed.createComponent(Login);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-
-    expect(compiled.querySelector('.auth-switch')).toBeNull();
-    expect(compiled.textContent).not.toContain('Regís');
-  });
-
   it('should store the session when the token is valid', () => {
     component.entrarAlSistema({ access_token: 'un.jwt.valido', user: { login: 'admin' } });
 

@@ -1,0 +1,66 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <aside class="auth-brand">
+      <div class="brand-logo">
+        <img src="iconos/flor.png" alt="Logo de Droguería Pili" />
+      </div>
+      <h1>Droguería Pili</h1>
+      <p class="brand-subtitle">Sistema Integral de Gestión Farmacéutica</p>
+    </aside>
+
+    <section class="auth-form">
+      <h2>Crear Cuenta</h2>
+      <p class="form-help">Complete los datos para registrar un nuevo usuario.</p>
+
+      <form (ngSubmit)="registrar()">
+        <div class="field">
+          <label for="nuevo-usuario">Usuario</label>
+          <input
+            id="nuevo-usuario"
+            type="text"
+            name="nuevoUsuario"
+            placeholder="Elija un nombre de usuario"
+            [(ngModel)]="nuevoUsuario"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="nueva-clave">Contraseña</label>
+          <input
+            id="nueva-clave"
+            type="password"
+            name="nuevaPass"
+            placeholder="Ingrese una contraseña"
+            [(ngModel)]="nuevaPass"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="confirmar-clave">Confirmar contraseña</label>
+          <input
+            id="confirmar-clave"
+            type="password"
+            name="confirmarPass"
+            placeholder="Repita la contraseña"
+            [(ngModel)]="confirmarPass"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Registrar Usuario</button>
+        <button type="button" class="btn btn-secondary" (click)="volverAlLogin()">
+          Cancelar y Volver
+        </button>
+      </form>
+
+      @if (error()) {
+        <div class="alerta">{{ mensaje() }}</div>
+      }
+    </section>
+  </div>
+</div>

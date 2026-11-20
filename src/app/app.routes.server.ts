@@ -10,6 +10,7 @@ const RUTAS_PRIVADAS = ['dashboard', 'inventory', 'sales', 'purchases', 'supplie
 export const serverRoutes: ServerRoute[] = [
   { path: '', renderMode: RenderMode.Prerender },
   { path: 'login', renderMode: RenderMode.Prerender },
+  { path: 'register', renderMode: RenderMode.Prerender },
   ...RUTAS_PRIVADAS.map((path): ServerRoute => ({ path, renderMode: RenderMode.Client })),
   { path: '**', renderMode: RenderMode.Client },
 ];

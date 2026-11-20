@@ -433,7 +433,7 @@ tbody tr:hover {
   font-size: 12px;
 }
 
-/* ===== AUTH (login) — split card centrada ===== */
+/* ===== AUTH (login / register) — split card centrada ===== */
 .auth-page {
   display: flex;
   align-items: center;
@@ -540,6 +540,28 @@ tbody tr:hover {
 
 .auth-form .btn + .btn {
   margin-top: 10px;
+}
+
+.auth-switch {
+  margin-top: 22px;
+  text-align: center;
+}
+
+.auth-switch p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.auth-switch a {
+  color: var(--secondary);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-switch a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
 
 /* Alerta de error de autenticacion (compartida) */
